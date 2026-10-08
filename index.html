@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enhancer</title>
+<meta name="description" content="Sharpen, clean up and colour-grade video in your browser. Nothing is uploaded.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0d0c; --panel:#161412; --line:#2a2724; --text:#ece7e1;
+  --muted:#8a837b; --accent:#ff6a1a; --accent-dim:#ff6a1a33;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);
+  font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 56px;position:relative}
+
+/* header */
+header{position:relative;padding-top:8px;margin-bottom:28px}
+.lang{position:absolute;top:0;right:0;display:flex;border:1px solid var(--line);
+  border-radius:999px;overflow:hidden}
+.lang button{background:none;border:0;color:var(--muted);font:500 11px var(--mono);
+  letter-spacing:.08em;padding:6px 11px;cursor:pointer}
+.lang button.on{background:var(--accent);color:#0e0d0c}
+.kicker{font-size:11px;letter-spacing:.22em;color:var(--accent);margin:34px 0 10px;
+  text-transform:uppercase}
+h1{font:italic 500 clamp(44px,12vw,72px)/1 var(--serif);margin:0 0 14px;letter-spacing:-.01em}
+.sub{color:var(--muted);max-width:52ch;margin:0}
+
+/* drop zone */
+.drop{border:1px dashed #4a443e;border-radius:14px;padding:34px 18px;text-align:center;
+  cursor:pointer;color:var(--muted);transition:.15s;background:var(--panel)}
+.drop:hover,.drop.over{border-color:var(--accent);color:var(--text);background:#1b1613}
+.drop strong{display:block;color:var(--text);font-weight:500;margin-bottom:4px}
+input[type=file]{display:none}
+
+/* preview */
+#stage{display:none;margin-top:18px}
+.player{position:relative;background:#000;border-radius:12px;overflow:hidden;
+  border:1px solid var(--line)}
+.player video{display:block;width:100%;max-height:60vh;background:#000}
+.fx{position:absolute;inset:0;pointer-events:none}
+#warmFx{mix-blend-mode:soft-light;opacity:0}
+#grainFx{mix-blend-mode:overlay;opacity:0;background-size:256px 256px;
+  animation:grain .6s steps(4) infinite}
+@keyframes grain{
+  0%{background-position:0 0}25%{background-position:-64px 40px}
+  50%{background-position:30px -80px}75%{background-position:-40px -20px}
+  100%{background-position:0 0}}
+.player.orig video{filter:none!important}
+.player.orig .fx{display:none}
+.bar{display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:10px;flex-wrap:wrap}
+.meta{color:var(--muted);font-size:12px}
+.hold{background:none;border:1px solid var(--line);color:var(--text);
+  font:500 11px var(--mono);letter-spacing:.06em;padding:8px 12px;border-radius:999px;
+  cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.hold:active{border-color:var(--accent);color:var(--accent)}
+.note{color:var(--muted);font-size:11px;margin:8px 0 0}
+
+/* controls */
+h2{font:500 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);margin:30px 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:none;border:1px solid var(--line);color:var(--text);
+  font:400 12px var(--mono);padding:8px 13px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:#5a534c}
+.chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.row{margin:0 0 16px}
+.row label,.row .lab{display:flex;justify-content:space-between;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.row output{color:var(--text)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;
+  background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--accent);margin-top:-8px;border:0}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:var(--accent);border:0}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+/* go */
+.go{display:flex;gap:10px;margin-top:30px}
+.btn{flex:1;background:var(--accent);color:#0e0d0c;border:0;border-radius:12px;
+  font:500 13px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:16px;
+  cursor:pointer}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.ghost{flex:0 0 auto;background:none;color:var(--text);border:1px solid var(--line)}
+.progress{height:3px;background:var(--line);border-radius:2px;margin-top:16px;
+  overflow:hidden;display:none}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#status{color:var(--muted);font-size:12px;margin-top:10px;min-height:18px}
+#status.err{color:#ff8a6a}
+#result{display:none;margin-top:26px}
+#result video{display:block;width:100%;border-radius:12px;border:1px solid var(--line);
+  background:#000;max-height:60vh}
+#dl{display:block;text-align:center;text-decoration:none;margin-top:12px}
+
+/* footer chips */
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);
+  display:flex;gap:8px;flex-wrap:wrap}
+footer a{color:var(--muted);text-decoration:none;border:1px solid var(--line);
+  border-radius:999px;padding:7px 13px;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase}
+footer a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" class="on">EN</button>
+    <button type="button" data-lang="ru">RU</button>
+  </div>
+  <div class="kicker" data-i18n="kicker">Video enhancer</div>
+  <h1>Enhancer</h1>
+  <p class="sub" data-i18n="sub"></p>
+</header>
+
+<label class="drop" id="drop">
+  <strong data-i18n="drop"></strong>
+  <span data-i18n="dropHint"></span>
+  <input type="file" id="file" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv">
+</label>
+
+<div id="stage">
+  <div class="player" id="player">
+    <video id="vid" controls playsinline muted loop></video>
+    <div class="fx" id="warmFx"></div>
+    <div class="fx" id="grainFx"></div>
+  </div>
+  <div class="bar">
+    <span class="meta" id="meta"></span>
+    <button type="button" class="hold" id="hold" data-i18n="hold"></button>
+  </div>
+  <p class="note" data-i18n="previewNote"></p>
+
+  <h2 data-i18n="gPresets"></h2>
+  <div class="chips" id="presets"></div>
+
+  <h2 data-i18n="gSize"></h2>
+  <div class="row">
+    <div class="lab"><span data-i18n="height"></span></div>
+    <div class="chips" id="heightChips"></div>
+  </div>
+  <div class="row">
+    <div class="lab"><span data-i18n="fps"></span></div>
+    <div class="chips" id="fpsChips"></div>
+  </div>
+  <div class="row" id="interpRow">
+    <div class="lab"><span data-i18n="interp"></span></div>
+    <div class="chips" id="interpChips"></div>
+  </div>
+
+  <h2 data-i18n="gClean"></h2>
+  <div id="sClean"></div>
+  <div class="toggles" id="tClean"></div>
+
+  <h2 data-i18n="gColour"></h2>
+  <div id="sColour"></div>
+
+  <h2 data-i18n="gLook"></h2>
+  <div id="sLook"></div>
+
+  <h2 data-i18n="gOut"></h2>
+  <div id="sOut"></div>
+  <div class="row">
+    <div class="lab"><span data-i18n="speed"></span></div>
+    <div class="chips" id="speedChips"></div>
+  </div>
+
+  <div class="go">
+    <button type="button" class="btn ghost" id="reset" data-i18n="reset"></button>
+    <button type="button" class="btn" id="run" data-i18n="run"></button>
+    <button type="button" class="btn ghost" id="cancel" data-i18n="cancel" style="display:none"></button>
+  </div>
+  <div class="progress" id="prog"><i id="bar"></i></div>
+  <div id="status"></div>
+
+  <div id="result">
+    <video id="out" controls playsinline></video>
+    <a class="btn" id="dl" data-i18n="download"></a>
+  </div>
+</div>
+
+<footer>
+  <a href="https://github.com/imBeyondiDentity/Enhancer" target="_blank" rel="noopener">GitHub</a>
+  <a href="mailto:imbeyondidentity@gmail.com" data-i18n="contact"></a>
+</footer>
+
+</div>
+
+<!-- sharpen filter used by the live preview only -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="sharpen" color-interpolation-filters="sRGB">
+    <feConvolveMatrix id="kernel" order="3" preserveAlpha="true"
+      kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+  </filter>
+</svg>
+
+<script>
+'use strict';
+
+/* ---------- strings ---------- */
+const I18N = {
+  en: {
+    kicker: 'Video enhancer',
+    sub: 'Sharpen, clean up and colour-grade your video. It all runs in your browser, so nothing is uploaded.',
+    drop: 'Drop a video here or tap to choose',
+    dropHint: 'MP4, MOV, WebM · best under about 300 MB',
+    hold: 'Hold to compare',
+    previewNote: 'The preview shows colour, sharpening and grain. Denoise, upscale and frame rate are applied on export.',
+    gPresets: 'Presets', gSize: 'Size & smoothness', gClean: 'Clean-up',
+    gColour: 'Colour', gLook: 'Look', gOut: 'Output',
+    height: 'Upscale to', fps: 'Frame rate', interp: 'Interpolation',
+    keep: 'Keep', blend: 'Blend (fast)', motion: 'Motion (slow)',
+    denoise: 'Denoise', sharpen: 'Sharpen', deflicker: 'Deflicker', deband: 'Deband',
+    contrast: 'Contrast', brightness: 'Brightness', saturation: 'Saturation',
+    vibrance: 'Vibrance', warmth: 'Warmth', grain: 'Film grain',
+    crf: 'Quality (CRF, lower is better)', speed: 'Encode speed',
+    fast: 'Fast', balanced: 'Balanced', slow: 'Best',
+    p_neutral: 'Neutral', p_ai: 'AI clean', p_cine: 'Cinematic',
+    p_crisp: 'Crisp', p_smooth: 'Smooth',
+    reset: 'Reset', run: 'Enhance', cancel: 'Cancel', download: 'Download',
+    contact: 'Contact',
+    loadEngine: 'Loading the engine (first time only)…',
+    working: 'Enhancing…', done: 'Done. Your file is ready below.',
+    cancelled: 'Cancelled.',
+    errEngine: 'Could not load the video engine. Check your connection and try again.',
+    errFail: 'Processing failed. Try a shorter clip, a lower upscale or a faster speed.',
+    errBig: 'This file is too large for the browser version. Use the Python CLI instead.',
+    errNoFile: 'Choose a video first.',
+    onlyUp: 'Upscaling only applies when the source is smaller.',
+    slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster.'
+  },
+  ru: {
+    kicker: 'Улучшение видео',
+    sub: 'Резкость, чистка и цвет для видео. Всё работает в браузере, файлы никуда не загружаются.',
+    drop: 'Перетащи видео сюда или нажми, чтобы выбрать',
+    dropHint: 'MP4, MOV, WebM · лучше до 300 МБ',
+    hold: 'Удерживай для сравнения',
+    previewNote: 'В превью видны цвет, резкость и зерно. Шумоподавление, апскейл и частота кадров применяются при экспорте.',
+    gPresets: 'Пресеты', gSize: 'Размер и плавность', gClean: 'Чистка',
+    gColour: 'Цвет', gLook: 'Вид', gOut: 'Результат',
+    height: 'Апскейл до', fps: 'Частота кадров', interp: 'Интерполяция',
+    keep: 'Как есть', blend: 'Смешивание (быстро)', motion: 'По движению (медленно)',
+    denoise: 'Шумоподавление', sharpen: 'Резкость', deflicker: 'Антимерцание', deband: 'Убрать бандинг',
+    contrast: 'Контраст', brightness: 'Яркость', saturation: 'Насыщенность',
+    vibrance: 'Живость', warmth: 'Теплота', grain: 'Плёночное зерно',
+    crf: 'Качество (CRF, меньше = лучше)', speed: 'Скорость кодирования',
+    fast: 'Быстро', balanced: 'Средне', slow: 'Лучше',
+    p_neutral: 'Нейтральный', p_ai: 'Чистка ИИ', p_cine: 'Кино',
+    p_crisp: 'Чёткий', p_smooth: 'Плавный',
+    reset: 'Сбросить', run: 'Улучшить', cancel: 'Отмена', download: 'Скачать',
+    contact: 'Контакты',
+    loadEngine: 'Загружаю движок (только в первый раз)…',
+    working: 'Улучшаю…', done: 'Готово. Файл ниже.',
+    cancelled: 'Отменено.',
+    errEngine: 'Не удалось загрузить видеодвижок. Проверь интернет и попробуй ещё раз.',
+    errFail: 'Не получилось обработать. Попробуй клип покороче, апскейл поменьше или скорость побыстрее.',
+    errBig: 'Файл слишком большой для браузерной версии. Используй Python CLI.',
+    errNoFile: 'Сначала выбери видео.',
+    onlyUp: 'Апскейл работает только если исходник меньше.',
+    slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее.'
+  }
+};
+
+let lang = 'en';
+const t = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+
+/* ---------- settings (mirrors enhancer.py) ---------- */
+const DEFAULTS = {
+  height: 0, denoise: 0, deflicker: false, deband: false, fps: 0,
+  interp: 'blend', sharpen: 0, contrast: 0, brightness: 0, saturation: 0,
+  vibrance: 0, warmth: 0, grain: 0, crf: 18
+};
+const PRESETS = {
+  p_neutral: {},
+  p_ai:    { height: 1080, denoise: 2.5, deband: true, sharpen: 0.7,
+             contrast: 8, saturation: 6, grain: 4 },
+  p_cine:  { denoise: 1.5, deband: true, sharpen: 0.4, contrast: 15,
+             saturation: -6, warmth: 12, grain: 10 },
+  p_crisp: { denoise: 1.5, sharpen: 1.2, contrast: 10, saturation: 10, vibrance: 20 },
+  p_smooth:{ denoise: 1, fps: 60, interp: 'motion', sharpen: 0.3 }
+};
+const SLIDERS = {
+  sClean:  [['denoise', 0, 10, 0.5], ['sharpen', 0, 2, 0.05]],
+  sColour: [['contrast', -100, 100, 1], ['brightness', -100, 100, 1],
+            ['saturation', -100, 100, 1], ['vibrance', -100, 100, 1],
+            ['warmth', -100, 100, 1]],
+  sLook:   [['grain', 0, 40, 1]],
+  sOut:    [['crf', 14, 28, 1]]
+};
+const HEIGHTS = [0, 1080, 1440, 2160];
+const FPS = [0, 24, 30, 48, 60];
+const SPEEDS = [['fast', 'veryfast'], ['balanced', 'fast'], ['slow', 'medium']];
+
+const S = Object.assign({}, DEFAULTS);
+let speed = 'veryfast';
+const state = { file: null, srcW: 0, srcH: 0, url: null, running: false };
+
+const $ = id => document.getElementById(id);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/* ---------- filter chain (same order and maths as enhancer.py) ---------- */
+function buildFilters(s, srcH) {
+  const c = [];
+  if (s.deflicker) c.push('deflicker=size=5:mode=am');
+  if (s.denoise > 0) {
+    const d = clamp(s.denoise, 0, 10);
+    c.push(`hqdn3d=${d.toFixed(2)}:${(d * 0.75).toFixed(2)}:${(d * 1.5).toFixed(2)}:${(d * 1.1).toFixed(2)}`);
+  }
+  if (s.deband) c.push('deband=1thr=0.02:2thr=0.02:3thr=0.02:blur=1');
+  if (s.fps > 0) {
+    c.push(s.interp === 'motion'
+      ? `minterpolate=fps=${s.fps}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1`
+      : `minterpolate=fps=${s.fps}:mi_mode=blend`);
+  }
+  if (s.height && srcH && s.height > srcH) c.push(`scale=-2:${s.height}:flags=lanczos`);
+  // The browser could not read the size (some codecs): let ffmpeg decide, still never scaling down.
+  else if (s.height && !srcH) c.push(`scale=-2:max(ih\\,${s.height}):flags=lanczos`);
+  if (s.sharpen > 0) c.push(`unsharp=5:5:${clamp(s.sharpen, 0, 2).toFixed(2)}:5:5:0`);
+  const eq = [];
+  if (s.contrast)   eq.push(`contrast=${(1 + s.contrast / 200).toFixed(3)}`);
+  if (s.brightness) eq.push(`brightness=${(s.brightness / 500).toFixed(3)}`);
+  if (s.saturation) eq.push(`saturation=${(1 + s.saturation / 100).toFixed(3)}`);
+  if (eq.length) c.push('eq=' + eq.join(':'));
+  if (s.vibrance) c.push(`vibrance=intensity=${(s.vibrance / 100).toFixed(3)}`);
+  if (s.warmth) {
+    const a = s.warmth / 100 * 0.25;
+    const f = x => x.toFixed(3);
+    c.push(`colorbalance=rs=${f(a)}:rm=${f(a)}:rh=${f(a)}:bs=${f(-a)}:bm=${f(-a)}:bh=${f(-a)}`);
+  }
+  if (s.grain > 0) c.push(`noise=alls=${Math.round(clamp(s.grain, 0, 40))}:allf=t`);
+  c.push('format=yuv420p');
+  return c;
+}
+
+/* ---------- live preview (approximation of the colour part) ---------- */
+function makeGrainTile() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 256;
+  const g = cv.getContext('2d');
+  const img = g.createImageData(256, 256);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random() * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return cv.toDataURL('image/png');
+}
+
+function applyPreview() {
+  const parts = [];
+  if (S.sharpen > 0) {
+    const a = S.sharpen * 0.9;
+    $('kernel').setAttribute('kernelMatrix',
+      `0 ${-a} 0 ${-a} ${1 + 4 * a} ${-a} 0 ${-a} 0`);
+    parts.push('url(#sharpen)');
+  }
+  parts.push(`contrast(${1 + S.contrast / 200})`);
+  parts.push(`brightness(${1 + S.brightness / 250})`);
+  parts.push(`saturate(${Math.max(0, 1 + S.saturation / 100 + S.vibrance / 300)})`);
+  $('vid').style.filter = parts.join(' ');
+
+  const warm = $('warmFx');
+  warm.style.background = S.warmth >= 0 ? 'rgb(255,140,40)' : 'rgb(60,130,255)';
+  warm.style.opacity = String(Math.abs(S.warmth) / 100 * 0.45);
+  $('grainFx').style.opacity = String(S.grain / 40 * 0.35);
+}
+
+/* ---------- UI building ---------- */
+function chipRow(host, items, getVal, onPick, label) {
+  host.textContent = '';
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (getVal() === it.value ? ' on' : '');
+    b.textContent = label(it);
+    b.addEventListener('click', () => { onPick(it.value); renderChips(); });
+    host.appendChild(b);
+  });
+}
+
+function renderChips() {
+  chipRow($('heightChips'), HEIGHTS.map(v => ({ value: v })),
+    () => S.height, v => { S.height = v; },
+    it => it.value ? `${it.value}p` : t('keep'));
+  chipRow($('fpsChips'), FPS.map(v => ({ value: v })),
+    () => S.fps, v => { S.fps = v; updateInterp(); },
+    it => it.value ? `${it.value} fps` : t('keep'));
+  chipRow($('interpChips'), ['blend', 'motion'].map(v => ({ value: v })),
+    () => S.interp, v => { S.interp = v; updateInterp(); },
+    it => t(it.value));
+  chipRow($('speedChips'), SPEEDS.map(([k, v]) => ({ value: v, key: k })),
+    () => speed, v => { speed = v; },
+    it => t(it.key));
+  const host = $('presets');
+  host.textContent = '';
+  Object.keys(PRESETS).forEach(k => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = t(k);
+    b.addEventListener('click', () => {
+      Object.assign(S, DEFAULTS, PRESETS[k]);
+      syncControls(); renderChips(); applyPreview();
+    });
+    host.appendChild(b);
+  });
+  updateInterp();
+}
+
+function updateInterp() {
+  $('interpRow').style.display = S.fps ? '' : 'none';
+}
+
+const sliderEls = {};
+function buildSliders() {
+  Object.entries(SLIDERS).forEach(([hostId, list]) => {
+    const host = $(hostId);
+    host.textContent = '';
+    list.forEach(([key, min, max, step]) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const lab = document.createElement('label');
+      const name = document.createElement('span');
+      name.dataset.i18n = key;
+      const out = document.createElement('output');
+      lab.append(name, out);
+      const inp = document.createElement('input');
+      inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step;
+      inp.value = S[key];
+      const show = () => { out.textContent = Number(inp.value).toString(); };
+      inp.addEventListener('input', () => {
+        S[key] = Number(inp.value); show(); applyPreview();
+      });
+      show();
+      row.append(lab, inp);
+      host.appendChild(row);
+      sliderEls[key] = { inp, show };
+    });
+  });
+  const tg = $('tClean');
+  tg.textContent = '';
+  ['deflicker', 'deband'].forEach(key => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.i18n = key;
+    b.className = 'chip' + (S[key] ? ' on' : '');
+    b.addEventListener('click', () => {
+      S[key] = !S[key]; b.classList.toggle('on', S[key]);
+    });
+    tg.appendChild(b);
+  });
+}
+
+function syncControls() {
+  Object.entries(sliderEls).forEach(([k, { inp, show }]) => {
+    inp.value = S[k]; show();
+  });
+  document.querySelectorAll('#tClean .chip').forEach(b => {
+    b.classList.toggle('on', !!S[b.dataset.i18n]);
+  });
+}
+
+/* ---------- language ---------- */
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll('[data-lang]').forEach(b =>
+    b.classList.toggle('on', b.dataset.lang === l));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  renderChips();
+  try { localStorage.setItem('enhancer-lang', l); } catch (e) { /* ignore */ }
+}
+
+/* ---------- file handling ---------- */
+function fmtTime(sec) {
+  if (!isFinite(sec)) return '';
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function loadFile(f) {
+  if (!f) return;
+  if (f.size > 700 * 1024 * 1024) { setStatus(t('errBig'), true); return; }
+  state.file = f;
+  if (state.url) URL.revokeObjectURL(state.url);
+  state.url = URL.createObjectURL(f);
+  const v = $('vid');
+  v.src = state.url;
+  v.onloadedmetadata = () => {
+    state.srcW = v.videoWidth; state.srcH = v.videoHeight;
+    $('meta').textContent =
+      `${f.name} · ${v.videoWidth}×${v.videoHeight} · ${fmtTime(v.duration)} · ${(f.size / 1048576).toFixed(1)} MB`;
+  };
+  v.onerror = () => {
+    state.srcW = state.srcH = 0;
+    $('meta').textContent = f.name;
+  };
+  $('stage').style.display = 'block';
+  $('result').style.display = 'none';
+  setStatus('');
+  applyPreview();
+  v.play().catch(() => {});
+}
+
+function setStatus(msg, err) {
+  const s = $('status');
+  s.textContent = msg;
+  s.classList.toggle('err', !!err);
+}
+
+/* ---------- ffmpeg.wasm ---------- */
+const CDNS = [
+  'https://unpkg.com',
+  'https://cdn.jsdelivr.net/npm'
+];
+const VER = { ffmpeg: '0.12.10', util: '0.12.1', core: '0.12.6' };
+let ffmpeg = null, loading = null;
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error('script ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function bootEngine() {
+  let lastErr;
+  for (const base of CDNS) {
+    try {
+      if (!window.FFmpegWASM) await loadScript(`${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/ffmpeg.js`);
+      if (!window.FFmpegUtil) await loadScript(`${base}/@ffmpeg/util@${VER.util}/dist/umd/index.js`);
+      const { toBlobURL } = window.FFmpegUtil;
+      const core = `${base}/@ffmpeg/core@${VER.core}/dist/umd`;
+      const inst = new window.FFmpegWASM.FFmpeg();
+      await inst.load({
+        coreURL: await toBlobURL(`${core}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${core}/ffmpeg-core.wasm`, 'application/wasm'),
+        classWorkerURL: await toBlobURL(
+          `${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/814.ffmpeg.js`, 'text/javascript')
+      });
+      return inst;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+
+async function ensureEngine() {
+  if (ffmpeg) return ffmpeg;
+  if (!loading) loading = bootEngine().then(i => { ffmpeg = i; return i; })
+    .finally(() => { loading = null; });
+  return loading;
+}
+
+/* ---------- run ---------- */
+let tail = [];
+async function run() {
+  if (!state.file) { setStatus(t('errNoFile'), true); return; }
+  if (state.running) return;
+  state.running = true;
+  $('run').disabled = true;
+  $('cancel').style.display = '';
+  $('result').style.display = 'none';
+  $('prog').style.display = 'block';
+  $('bar').style.width = '0';
+  setStatus(t('loadEngine'));
+
+  const notes = [];
+  if (S.height && state.srcH && S.height <= state.srcH) notes.push(t('onlyUp'));
+  if (S.fps && S.interp === 'motion') notes.push(t('slowInterp'));
+
+  let ok = false;
+  try {
+    let eng;
+    try { eng = await ensureEngine(); }
+    catch (e) { setStatus(t('errEngine'), true); return; }
+
+    eng.on('progress', ({ progress }) => {
+      $('bar').style.width = clamp(progress * 100, 0, 100).toFixed(1) + '%';
+    });
+    eng.on('log', ({ message }) => { tail.push(message); tail = tail.slice(-6); });
+
+    setStatus([t('working')].concat(notes).join('  '));
+    const ext = (state.file.name.match(/\.[a-z0-9]+$/i) || ['.mp4'])[0].toLowerCase();
+    const inName = 'input' + ext;
+    await eng.writeFile(inName, new Uint8Array(await state.file.arrayBuffer()));
+
+    const vf = buildFilters(S, state.srcH).join(',');
+    const base = ['-i', inName, '-vf', vf, '-c:v', 'libx264', '-crf', String(S.crf),
+      '-preset', speed, '-movflags', '+faststart'];
+
+    let code = await eng.exec([...base, '-c:a', 'copy', 'out.mp4']);
+    if (code !== 0 && state.running) {
+      code = await eng.exec([...base, '-c:a', 'aac', '-b:a', '320k', 'out.mp4']);
+    }
+    if (code !== 0) throw new Error('ffmpeg exit ' + code);
+
+    const data = await eng.readFile('out.mp4');
+    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    const out = $('out');
+    if (out.dataset.url) URL.revokeObjectURL(out.dataset.url);
+    out.dataset.url = url;
+    out.src = url;
+    const dl = $('dl');
+    dl.href = url;
+    dl.download = state.file.name.replace(/\.[^.]+$/, '') + '_enhanced.mp4';
+    $('result').style.display = 'block';
+    $('bar').style.width = '100%';
+    setStatus(t('done'));
+    ok = true;
+    try { await eng.deleteFile(inName); await eng.deleteFile('out.mp4'); } catch (e) { /* ignore */ }
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    if (state.running) setStatus(t('errFail'), true);
+  } finally {
+    state.running = false;
+    $('run').disabled = false;
+    $('cancel').style.display = 'none';
+    if (!ok) $('prog').style.display = 'none';
+  }
+}
+
+function cancel() {
+  if (!state.running) return;
+  state.running = false;
+  if (ffmpeg) { try { ffmpeg.terminate(); } catch (e) { /* ignore */ } ffmpeg = null; }
+  setStatus(t('cancelled'));
+}
+
+/* ---------- wiring ---------- */
+function init() {
+  $('warmFx').style.opacity = '0';
+  $('grainFx').style.backgroundImage = `url(${makeGrainTile()})`;
+  buildSliders();
+
+  document.querySelectorAll('[data-lang]').forEach(b =>
+    b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  let saved = null;
+  try { saved = localStorage.getItem('enhancer-lang'); } catch (e) { /* ignore */ }
+  setLang(saved || ((navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en'));
+
+  const drop = $('drop');
+  $('file').addEventListener('change', e => loadFile(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.add('over');
+  }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.remove('over');
+  }));
+  drop.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
+
+  const hold = $('hold'), player = $('player');
+  const on = e => { e.preventDefault(); player.classList.add('orig'); };
+  const off = () => player.classList.remove('orig');
+  hold.addEventListener('pointerdown', on);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => hold.addEventListener(ev, off));
+
+  $('reset').addEventListener('click', () => {
+    Object.assign(S, DEFAULTS); syncControls(); renderChips(); applyPreview();
+  });
+  $('run').addEventListener('click', run);
+  $('cancel').addEventListener('click', cancel);
+  applyPreview();
+}
+init();
+</script>
+</body>
+</html>
