@@ -5,7 +5,7 @@
 - **Браузерная версия** (`index.html`): работает целиком на твоём устройстве, ничего не загружается.
 - **Python CLI** (`enhancer.py`): тонкая обёртка над ffmpeg. Быстрее, тянет большие файлы и умеет обрабатывать несколько роликов подряд.
 
-[English version](README.md)
+[![Открыть](https://img.shields.io/badge/%D0%9E%D1%82%D0%BA%D1%80%D1%8B%D1%82%D1%8C-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](https://imbeyondidentity.github.io/Enhancer/) [![GitHub](https://img.shields.io/badge/GitHub-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](https://github.com/imBeyondiDentity/Enhancer) [![English](https://img.shields.io/badge/English-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](README.md) [![Написать](https://img.shields.io/badge/%D0%9D%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](mailto:imbeyondidentity@gmail.com) [![MIT](https://img.shields.io/badge/MIT-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](LICENSE)
 
 ## Что умеет
 
