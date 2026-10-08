@@ -35,12 +35,13 @@ Open `index.html` (or the GitHub Pages site), choose a video, pick a preset or m
 Requirements: Python 3.9 or newer, plus `ffmpeg` and `ffprobe` on your `PATH`. There are no Python packages to install.
 
 ```
-python enhancer.py clip.mp4
-python enhancer.py clip.mp4 --preset ai-clean --height 1080
-python enhancer.py a.mp4 b.mp4 --preset crisp
-python enhancer.py clip.mp4 --fps 60 --interp motion --denoise 1
-python enhancer.py clip.mp4 --preset cinematic --codec h265 --crf 20
-python enhancer.py clip.mp4 --preset ai-clean --dry-run
+python enhancer.py in.mp4
+python enhancer.py a.mp4 b.mp4
+python enhancer.py in.mp4 --dry-run
+python enhancer.py in.mp4 --fps 60
+python enhancer.py in.mp4 --height 1080
+python enhancer.py in.mp4 --codec h265
+python enhancer.py in.mp4 --preset crisp
 ```
 
 The result is saved next to the original as `<name>_enhanced.mp4`, or wherever `-o` points when you give a single input. Options you pass override the preset.

@@ -35,12 +35,13 @@
 Нужны: Python 3.9 или новее, а также `ffmpeg` и `ffprobe` в `PATH`. Устанавливать Python-пакеты не нужно.
 
 ```
-python enhancer.py clip.mp4
-python enhancer.py clip.mp4 --preset ai-clean --height 1080
-python enhancer.py a.mp4 b.mp4 --preset crisp
-python enhancer.py clip.mp4 --fps 60 --interp motion --denoise 1
-python enhancer.py clip.mp4 --preset cinematic --codec h265 --crf 20
-python enhancer.py clip.mp4 --preset ai-clean --dry-run
+python enhancer.py in.mp4
+python enhancer.py a.mp4 b.mp4
+python enhancer.py in.mp4 --dry-run
+python enhancer.py in.mp4 --fps 60
+python enhancer.py in.mp4 --height 1080
+python enhancer.py in.mp4 --codec h265
+python enhancer.py in.mp4 --preset crisp
 ```
 
 Результат сохраняется рядом с оригиналом как `<имя>_enhanced.mp4`, а при одном входном файле можно указать путь через `-o`. Параметры, которые ты задаёшь, перекрывают пресет.
