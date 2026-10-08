@@ -31,7 +31,7 @@ Open `index.html` (or the GitHub Pages site), choose a video, pick a preset or m
 - The live preview shows colour, sharpening and grain. Hold **Hold to compare** to see the original.
 - Denoise, upscale and frame rate are applied on export.
 - The video engine (ffmpeg.wasm) is downloaded from a CDN the first time you press **Enhance**, so you need to be online once.
-- The browser engine is single-threaded. Keep clips short (under about 300 MB), and avoid motion interpolation and 4K there. Use the CLI for those.
+- The browser engine is single-threaded. Keep clips short (under about 300 MB), and avoid motion interpolation and 4K there. Use the CLI for those. If the page crashes on **Best**, pick **Balanced**: it needs far less memory.
 
 ## Python CLI
 

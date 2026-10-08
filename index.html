@@ -198,6 +198,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
       <div class="lab"><span data-i18n="speed"></span></div>
       <div class="chips" id="speedChips"></div>
     </div>
+    <p class="note" data-i18n="speedNote"></p>
   </section>
 
   <div class="go">
@@ -255,6 +256,7 @@ const I18N = {
     vibrance: 'Vibrance', warmth: 'Warmth', grain: 'Film grain',
     crf: 'Quality (CRF, lower is better)', speed: 'Encode speed',
     fast: 'Fast', balanced: 'Balanced', slow: 'Best',
+    speedNote: 'Best needs the most memory. If the page crashes, pick Balanced, upscale less, or use the CLI.',
     p_neutral: 'Neutral', p_ai: 'AI clean', p_cine: 'Cinematic',
     p_crisp: 'Crisp', p_smooth: 'Smooth',
     reset: 'Reset', run: 'Enhance', cancel: 'Cancel', download: 'Download',
@@ -289,6 +291,7 @@ const I18N = {
     vibrance: 'Живость', warmth: 'Теплота', grain: 'Плёночное зерно',
     crf: 'Качество (CRF, меньше = лучше)', speed: 'Скорость кодирования',
     fast: 'Быстро', balanced: 'Средне', slow: 'Лучше',
+    speedNote: 'Режиму «Лучше» нужно больше всего памяти. Если страница падает, выбери «Средне», уменьши апскейл или используй CLI.',
     p_neutral: 'Нейтральный', p_ai: 'Чистка ИИ', p_cine: 'Кино',
     p_crisp: 'Чёткий', p_smooth: 'Плавный',
     reset: 'Сбросить', run: 'Улучшить', cancel: 'Отмена', download: 'Скачать',
@@ -333,7 +336,10 @@ const SLIDERS = {
 };
 const HEIGHTS = [0, 1080, 1440, 2160];
 const FPS = [0, 24, 30, 48, 60];
-const SPEEDS = [['fast', 'veryfast'], ['balanced', 'fast'], ['slow', 'medium']];
+// Browser memory is tight, so "Best" is x264 "fast" with a short look-ahead,
+// not "medium" (which ran the tab out of memory).
+const SPEEDS = [['fast', 'ultrafast'], ['balanced', 'veryfast'], ['slow', 'fast']];
+const SPEED_PARAMS = { fast: 'rc-lookahead=10:ref=2:bframes=2' };
 
 const S = Object.assign({}, DEFAULTS);
 let speed = 'veryfast';
@@ -665,10 +671,16 @@ async function run() {
 
     const vf = buildFilters(S, state.srcH).join(',');
     const base = ['-i', inName, '-vf', vf, '-c:v', 'libx264', '-crf', String(S.crf),
-      '-preset', speed, '-movflags', '+faststart'];
+      '-preset', speed];
+    if (SPEED_PARAMS[speed]) base.push('-x264-params', SPEED_PARAMS[speed]);
+    base.push('-movflags', '+faststart');
 
+    tail = [];
     let code = await eng.exec([...base, '-c:a', 'copy', 'out.mp4']);
-    if (code !== 0 && state.running) {
+    // Retry with re-encoded audio only for an ordinary error, never after the
+    // engine itself ran out of memory and aborted.
+    const crashed = /abort|memory|OOM|out of bounds/i.test(tail.join(' '));
+    if (code !== 0 && state.running && !crashed) {
       code = await eng.exec([...base, '-c:a', 'aac', '-b:a', '320k', 'out.mp4']);
     }
     if (code !== 0) throw new Error('ffmpeg exit ' + code);
@@ -690,7 +702,11 @@ async function run() {
     try { await eng.deleteFile(inName); await eng.deleteFile('out.mp4'); } catch (e) { /* ignore */ }
     $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (e) {
-    if (state.running) setStatus(t('errFail'), true);
+    if (state.running) {
+      setStatus(t('errFail'), true);
+      // A crashed engine cannot be reused: drop it so the next try starts clean.
+      if (ffmpeg) { try { ffmpeg.terminate(); } catch (e2) { /* ignore */ } ffmpeg = null; }
+    }
   } finally {
     state.running = false;
     $('run').disabled = false;
