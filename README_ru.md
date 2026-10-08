@@ -6,7 +6,7 @@
 - **Python CLI** (`enhancer.py`): тонкая обёртка над ffmpeg. Быстрее, тянет большие файлы и умеет обрабатывать несколько роликов подряд.
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Open Enhancer](https://img.shields.io/badge/Open-Enhancer-ff6a1a?style=flat)](https://imbeyondidentity.github.io/Enhancer/)
+[![Open Enhancer](https://img.shields.io/badge/Open-Enhancer-ff6a1a?style=flat)](https://imbeyondidentity.github.io/video-enhancer/)
 
 [English version](README.md)
 
