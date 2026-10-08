@@ -5,7 +5,10 @@ Sharpen, clean up and colour-grade video in one pass. There are two ways to use 
 - **Browser app** (`index.html`): runs entirely on your device. Nothing is uploaded.
 - **Python CLI** (`enhancer.py`): a thin wrapper around ffmpeg. Faster, handles big files, and can process several clips at once.
 
-[![Open app](https://img.shields.io/badge/Open%20app-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](https://imbeyondidentity.github.io/Enhancer/) [![GitHub](https://img.shields.io/badge/GitHub-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](https://github.com/imBeyondiDentity/Enhancer) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](README_ru.md) [![Contact](https://img.shields.io/badge/Contact-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](mailto:imbeyondidentity@gmail.com) [![MIT](https://img.shields.io/badge/MIT-ff6a1a?style=for-the-badge&labelColor=0e0d0c&color=ff6a1a)](LICENSE)
+[![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
+[![Open Enhancer](https://img.shields.io/badge/Open-Enhancer-ff6a1a?style=flat)](https://imbeyondidentity.github.io/Enhancer/)
+
+[Русская версия](README_ru.md)
 
 ## What it does
 
