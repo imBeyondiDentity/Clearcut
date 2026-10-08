@@ -582,33 +582,42 @@ async function findWorkerChunk(pkg) {
   return '814.ffmpeg.js';
 }
 
+// A worker made from a blob (classWorkerURL) runs as a module worker, and a
+// module worker cannot importScripts() the UMD core. It needs the ESM core, so
+// that goes first; the UMD core stays as a fallback.
+const CORE_FLAVOURS = ['esm', 'umd'];
+
 async function bootEngine() {
   const problems = [];
   for (const base of CDNS) {
-    let step = 'ffmpeg.js';
-    try {
-      if (!window.FFmpegWASM) await loadScript(`${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/ffmpeg.js`);
-      step = 'util.js';
-      if (!window.FFmpegUtil) await loadScript(`${base}/@ffmpeg/util@${VER.util}/dist/umd/index.js`);
-      const { toBlobURL } = window.FFmpegUtil;
-      const pkg = `${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd`;
-      const core = `${base}/@ffmpeg/core@${VER.core}/dist/umd`;
-      step = 'worker name';
-      const chunk = await findWorkerChunk(pkg);
-      step = 'ffmpeg-core.js';
-      const coreURL = await toBlobURL(`${core}/ffmpeg-core.js`, 'text/javascript');
-      step = 'ffmpeg-core.wasm';
-      const wasmURL = await toBlobURL(`${core}/ffmpeg-core.wasm`, 'application/wasm');
-      step = chunk;
-      const classWorkerURL = await toBlobURL(`${pkg}/${chunk}`, 'text/javascript');
-      step = 'start';
-      const inst = new window.FFmpegWASM.FFmpeg();
-      await inst.load({ coreURL, wasmURL, classWorkerURL });
-      return inst;
-    } catch (e) {
-      console.error('Enhancer engine', base, step, e);
-      const host = base.replace(/^https?:\/\//, '').split('/')[0];
-      problems.push(`${host}: ${step}: ${(e && e.message) || e}`);
+    for (const flavour of CORE_FLAVOURS) {
+      let step = 'ffmpeg.js';
+      let inst = null;
+      try {
+        if (!window.FFmpegWASM) await loadScript(`${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/ffmpeg.js`);
+        step = 'util.js';
+        if (!window.FFmpegUtil) await loadScript(`${base}/@ffmpeg/util@${VER.util}/dist/umd/index.js`);
+        const { toBlobURL } = window.FFmpegUtil;
+        const pkg = `${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd`;
+        const core = `${base}/@ffmpeg/core@${VER.core}/dist/${flavour}`;
+        step = 'worker name';
+        const chunk = await findWorkerChunk(pkg);
+        step = 'ffmpeg-core.js';
+        const coreURL = await toBlobURL(`${core}/ffmpeg-core.js`, 'text/javascript');
+        step = 'ffmpeg-core.wasm';
+        const wasmURL = await toBlobURL(`${core}/ffmpeg-core.wasm`, 'application/wasm');
+        step = chunk;
+        const classWorkerURL = await toBlobURL(`${pkg}/${chunk}`, 'text/javascript');
+        step = 'start';
+        inst = new window.FFmpegWASM.FFmpeg();
+        await inst.load({ coreURL, wasmURL, classWorkerURL });
+        return inst;
+      } catch (e) {
+        console.error('Enhancer engine', base, flavour, step, e);
+        if (inst) { try { inst.terminate(); } catch (e2) { /* ignore */ } }
+        const host = base.replace(/^https?:\/\//, '').split('/')[0];
+        problems.push(`${host} ${flavour}: ${step}: ${(e && e.message) || e}`);
+      }
     }
   }
   throw new Error(problems.join('\n'));
