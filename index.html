@@ -105,7 +105,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 .progress{height:3px;background:var(--track);border-radius:2px;margin-top:18px;
   overflow:hidden;display:none}
 .progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
-#status{color:var(--muted);font-size:13px;margin-top:12px;min-height:20px;text-align:center}
+#status{color:var(--muted);font-size:13px;margin-top:12px;min-height:20px;text-align:center;
+  white-space:pre-line;word-break:break-word}
 #status.err{color:#ff8a6a}
 #result{display:none;margin-top:28px}
 #result video{display:block;width:100%;border-radius:20px;border:1px solid var(--line);
@@ -570,25 +571,47 @@ function loadScript(src) {
   });
 }
 
+// The worker script is a numbered chunk (814.ffmpeg.js in the versions we
+// know). Read its real name from ffmpeg.js itself so a rename cannot break us.
+async function findWorkerChunk(pkg) {
+  try {
+    const txt = await (await fetch(`${pkg}/ffmpeg.js`)).text();
+    const m = txt.match(/\.u\((\d+)\)/) || txt.match(/(\d+)\.ffmpeg\.js/);
+    if (m) return `${m[1]}.ffmpeg.js`;
+  } catch (e) { /* fall back to the known name */ }
+  return '814.ffmpeg.js';
+}
+
 async function bootEngine() {
-  let lastErr;
+  const problems = [];
   for (const base of CDNS) {
+    let step = 'ffmpeg.js';
     try {
       if (!window.FFmpegWASM) await loadScript(`${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/ffmpeg.js`);
+      step = 'util.js';
       if (!window.FFmpegUtil) await loadScript(`${base}/@ffmpeg/util@${VER.util}/dist/umd/index.js`);
       const { toBlobURL } = window.FFmpegUtil;
+      const pkg = `${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd`;
       const core = `${base}/@ffmpeg/core@${VER.core}/dist/umd`;
+      step = 'worker name';
+      const chunk = await findWorkerChunk(pkg);
+      step = 'ffmpeg-core.js';
+      const coreURL = await toBlobURL(`${core}/ffmpeg-core.js`, 'text/javascript');
+      step = 'ffmpeg-core.wasm';
+      const wasmURL = await toBlobURL(`${core}/ffmpeg-core.wasm`, 'application/wasm');
+      step = chunk;
+      const classWorkerURL = await toBlobURL(`${pkg}/${chunk}`, 'text/javascript');
+      step = 'start';
       const inst = new window.FFmpegWASM.FFmpeg();
-      await inst.load({
-        coreURL: await toBlobURL(`${core}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${core}/ffmpeg-core.wasm`, 'application/wasm'),
-        classWorkerURL: await toBlobURL(
-          `${base}/@ffmpeg/ffmpeg@${VER.ffmpeg}/dist/umd/814.ffmpeg.js`, 'text/javascript')
-      });
+      await inst.load({ coreURL, wasmURL, classWorkerURL });
       return inst;
-    } catch (e) { lastErr = e; }
+    } catch (e) {
+      console.error('Enhancer engine', base, step, e);
+      const host = base.replace(/^https?:\/\//, '').split('/')[0];
+      problems.push(`${host}: ${step}: ${(e && e.message) || e}`);
+    }
   }
-  throw lastErr;
+  throw new Error(problems.join('\n'));
 }
 
 async function ensureEngine() {
@@ -619,7 +642,7 @@ async function run() {
   try {
     let eng;
     try { eng = await ensureEngine(); }
-    catch (e) { setStatus(t('errEngine'), true); return; }
+    catch (e) { setStatus(t('errEngine') + '\n' + e.message, true); return; }
 
     eng.on('progress', ({ progress }) => {
       $('bar').style.width = clamp(progress * 100, 0, 100).toFixed(1) + '%';
@@ -674,6 +697,23 @@ function cancel() {
   setStatus(t('cancelled'));
 }
 
+/* ---------- reset: settings, speed, status, progress and result ---------- */
+function resetAll() {
+  if (state.running) cancel();
+  Object.assign(S, DEFAULTS);
+  speed = 'veryfast';
+  syncControls(); renderChips(); applyPreview();
+  setStatus('');
+  $('prog').style.display = 'none';
+  $('bar').style.width = '0';
+  const out = $('out');
+  if (out.dataset.url) { URL.revokeObjectURL(out.dataset.url); delete out.dataset.url; }
+  out.removeAttribute('src');
+  out.load();
+  $('result').style.display = 'none';
+  $('run').disabled = false;
+}
+
 /* ---------- wiring ---------- */
 function init() {
   $('warmFx').style.opacity = '0';
@@ -688,7 +728,10 @@ function init() {
   setLang(saved || ((navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en'));
 
   const drop = $('drop');
-  $('file').addEventListener('change', e => loadFile(e.target.files[0]));
+  $('file').addEventListener('change', e => {
+    loadFile(e.target.files[0]);
+    e.target.value = '';  // lets you pick the same file again
+  });
   ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
     e.preventDefault(); drop.classList.add('over');
   }));
@@ -703,9 +746,7 @@ function init() {
   hold.addEventListener('pointerdown', on);
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => hold.addEventListener(ev, off));
 
-  $('reset').addEventListener('click', () => {
-    Object.assign(S, DEFAULTS); syncControls(); renderChips(); applyPreview();
-  });
+  $('reset').addEventListener('click', resetAll);
   $('run').addEventListener('click', run);
   $('cancel').addEventListener('click', cancel);
   applyPreview();
