@@ -1,12 +1,12 @@
-# Enhancer
+# Clearcut
 
 Sharpen, clean up and colour-grade video in one pass. There are two ways to use it, and both share the same filter chain, so they give the same look:
 
 - **Browser app** (`index.html`): runs entirely on your device. Nothing is uploaded.
-- **Python CLI** (`enhancer.py`): a thin wrapper around ffmpeg. Faster, handles big files, and can process several clips at once.
+- **Python CLI** (`clearcut.py`): a thin wrapper around ffmpeg. Faster, handles big files, and can process several clips at once.
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Open Enhancer](https://img.shields.io/badge/Open-Enhancer-ff6a1a?style=flat)](https://imbeyondidentity.github.io/video-enhancer/)
+[![Open Clearcut](https://img.shields.io/badge/Open-Clearcut-ff6a1a?style=flat)](https://imbeyondidentity.github.io/clearcut/)
 
 [Русская версия](README_ru.md)
 
@@ -38,13 +38,13 @@ Open `index.html` (or the GitHub Pages site), choose a video, pick a preset or m
 Requirements: Python 3.9 or newer, plus `ffmpeg` and `ffprobe` on your `PATH`. There are no Python packages to install.
 
 ```
-python enhancer.py in.mp4
-python enhancer.py a.mp4 b.mp4
-python enhancer.py in.mp4 --dry-run
-python enhancer.py in.mp4 --fps 60
-python enhancer.py in.mp4 --height 1080
-python enhancer.py in.mp4 --codec h265
-python enhancer.py in.mp4 --preset crisp
+python clearcut.py in.mp4
+python clearcut.py a.mp4 b.mp4
+python clearcut.py in.mp4 --dry-run
+python clearcut.py in.mp4 --fps 60
+python clearcut.py in.mp4 --height 1080
+python clearcut.py in.mp4 --codec h265
+python clearcut.py in.mp4 --preset crisp
 ```
 
 The result is saved next to the original as `<name>_enhanced.mp4`, or wherever `-o` points when you give a single input. Options you pass override the preset.
@@ -69,7 +69,7 @@ Audio is copied untouched when it is AAC, MP3 or ALAC. Anything else is re-encod
 
 ## Crash reports
 
-If something goes wrong, Enhancer can write a
+If something goes wrong, Clearcut can write a
 plain-text report that shows what happened.
 Nothing is sent anywhere: you save the file
 and send it yourself. File names are left out.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enhancer</title>
+<title>Clearcut</title>
 <meta name="description" content="Sharpen, clean up and colour-grade video in your browser. Nothing is uploaded.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -144,13 +144,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 <div class="wrap">
 
 <header>
-  <div class="vtag" id="vtag" title="Enhancer"></div>
+  <div class="vtag" id="vtag" title="Clearcut"></div>
   <div class="lang" role="group" aria-label="Language">
     <button type="button" data-lang="en" class="on">EN</button>
     <button type="button" data-lang="ru">RU</button>
   </div>
   <div class="kicker" data-i18n="kicker">Video enhancer</div>
-  <h1>Enhancer</h1>
+  <h1>Clearcut</h1>
   <p class="sub" data-i18n="sub"></p>
 </header>
 
@@ -255,8 +255,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 </section>
 
 <footer class="foot">
-  <a class="fchip" href="https://github.com/imBeyondiDentity/video-enhancer" target="_blank" rel="noopener">Github</a>
-  <div class="mid"><i></i><span>Enhancer</span><i></i></div>
+  <a class="fchip" href="https://github.com/imBeyondiDentity/clearcut" target="_blank" rel="noopener">Github</a>
+  <div class="mid"><i></i><span>Clearcut</span><i></i></div>
   <a class="fchip" href="mailto:imbeyondidentity@gmail.com" data-i18n="contact"></a>
 </footer>
 
@@ -376,7 +376,7 @@ const I18N = {
 let lang = 'en';
 const t = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
 
-/* ---------- settings (mirrors enhancer.py) ---------- */
+/* ---------- settings (mirrors clearcut.py) ---------- */
 const DEFAULTS = {
   height: 0, denoise: 0, deflicker: false, deband: false, fps: 0,
   interp: 'blend', sharpen: 0, contrast: 0, brightness: 0, saturation: 0,
@@ -418,8 +418,8 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 // tab dies (usually out of memory) nothing else can run, but the last saved
 // state is still there on the next load and becomes CRASHREPORT.txt.
 const APP_VERSION = '1.1.0';
-const KEY_NOW = 'enhancer-diag-now';
-const KEY_CRASH = 'enhancer-diag-crash';
+const KEY_NOW = 'clearcut-diag-now';
+const KEY_CRASH = 'clearcut-diag-crash';
 const STALL_SECONDS = 90;
 
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
@@ -550,8 +550,8 @@ function quickChecks() {
   const add = (level, label, detail) => items.push({ level, label, detail: detail || '' });
   add(typeof WebAssembly === 'object' ? 'ok' : 'fail', 'WebAssembly');
   add(typeof Worker === 'function' ? 'ok' : 'fail', 'Web Workers');
-  const stored = lsSet('enhancer-probe', 1) && lsGet('enhancer-probe') === 1;
-  lsDel('enhancer-probe');
+  const stored = lsSet('clearcut-probe', 1) && lsGet('clearcut-probe') === 1;
+  lsDel('clearcut-probe');
   add(stored ? 'ok' : 'warn', 'Storage', stored ? '' : 'a crash report cannot be saved');
   add(location.protocol === 'file:' ? 'warn' : 'ok', 'Page',
       location.protocol === 'file:' ? 'opened from a file, the web link works better'
@@ -760,9 +760,9 @@ function sessionText(d, title, withDevice = true) {
 }
 
 function buildReport() {
-  const L = ['ENHANCER CRASHREPORT', '===================='];
+  const L = ['CLEARCUT CRASHREPORT', '===================='];
   L.push(kv('Created', clock(Date.now())));
-  L.push(kv('App', `Enhancer ${APP_VERSION} (browser)`));
+  L.push(kv('App', `Clearcut ${APP_VERSION} (browser)`));
   L.push(kv('Page', sess.env.page));
   L.push(kv('Engine', `ffmpeg.wasm ${VER.ffmpeg}, core ${VER.core}`));
   L.push(kv('Privacy', 'no file names, nothing is sent anywhere'), '');
@@ -808,7 +808,7 @@ function clearAll() { clearCrash(); setDiag(t('dgCleared')); }
 function clearCrash() { lsDel(KEY_CRASH); crashed = null; showCrash(); }
 
 
-/* ---------- filter chain (same order and maths as enhancer.py) ---------- */
+/* ---------- filter chain (same order and maths as clearcut.py) ---------- */
 function buildFilters(s, srcH) {
   const c = [];
   if (s.deflicker) c.push('deflicker=size=5:mode=am');
@@ -982,7 +982,7 @@ function setLang(l) {
   });
   showCrash();
   renderChips();
-  try { localStorage.setItem('enhancer-lang', l); } catch (e) { /* ignore */ }
+  try { localStorage.setItem('clearcut-lang', l); } catch (e) { /* ignore */ }
 }
 
 /* ---------- file handling ---------- */
@@ -1080,7 +1080,7 @@ async function bootEngine() {
         await inst.load({ coreURL, wasmURL, classWorkerURL });
         return inst;
       } catch (e) {
-        console.error('Enhancer engine', base, flavour, step, e);
+        console.error('Clearcut engine', base, flavour, step, e);
         if (inst) { try { inst.terminate(); } catch (e2) { /* ignore */ } }
         const host = base.replace(/^https?:\/\//, '').split('/')[0];
         problems.push(`${host} ${flavour}: ${step}: ${(e && e.message) || e}`);
@@ -1262,7 +1262,7 @@ function init() {
     b.addEventListener('click', () => setLang(b.dataset.lang)));
 
   let saved = null;
-  try { saved = localStorage.getItem('enhancer-lang'); } catch (e) { /* ignore */ }
+  try { saved = localStorage.getItem('clearcut-lang'); } catch (e) { /* ignore */ }
   setLang(saved || ((navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en'));
 
   const drop = $('drop');

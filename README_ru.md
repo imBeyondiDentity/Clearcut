@@ -1,12 +1,12 @@
-# Enhancer
+# Clearcut
 
 Резкость, чистка и цвет для видео за один проход. Есть два способа использовать, и у обоих одна и та же цепочка фильтров, так что результат совпадает:
 
 - **Браузерная версия** (`index.html`): работает целиком на твоём устройстве, ничего не загружается.
-- **Python CLI** (`enhancer.py`): тонкая обёртка над ffmpeg. Быстрее, тянет большие файлы и умеет обрабатывать несколько роликов подряд.
+- **Python CLI** (`clearcut.py`): тонкая обёртка над ffmpeg. Быстрее, тянет большие файлы и умеет обрабатывать несколько роликов подряд.
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Open Enhancer](https://img.shields.io/badge/Open-Enhancer-ff6a1a?style=flat)](https://imbeyondidentity.github.io/video-enhancer/)
+[![Open Clearcut](https://img.shields.io/badge/Open-Clearcut-ff6a1a?style=flat)](https://imbeyondidentity.github.io/clearcut/)
 
 [English version](README.md)
 
@@ -38,13 +38,13 @@
 Нужны: Python 3.9 или новее, а также `ffmpeg` и `ffprobe` в `PATH`. Устанавливать Python-пакеты не нужно.
 
 ```
-python enhancer.py in.mp4
-python enhancer.py a.mp4 b.mp4
-python enhancer.py in.mp4 --dry-run
-python enhancer.py in.mp4 --fps 60
-python enhancer.py in.mp4 --height 1080
-python enhancer.py in.mp4 --codec h265
-python enhancer.py in.mp4 --preset crisp
+python clearcut.py in.mp4
+python clearcut.py a.mp4 b.mp4
+python clearcut.py in.mp4 --dry-run
+python clearcut.py in.mp4 --fps 60
+python clearcut.py in.mp4 --height 1080
+python clearcut.py in.mp4 --codec h265
+python clearcut.py in.mp4 --preset crisp
 ```
 
 Результат сохраняется рядом с оригиналом как `<имя>_enhanced.mp4`, а при одном входном файле можно указать путь через `-o`. Параметры, которые ты задаёшь, перекрывают пресет.
@@ -69,7 +69,7 @@ python enhancer.py in.mp4 --preset crisp
 
 ## Отчёты о сбоях
 
-Если что-то пошло не так, Enhancer может
+Если что-то пошло не так, Clearcut может
 записать текстовый отчёт о том, что
 произошло. Ничего не отправляется само:
 файл ты сохраняешь и присылаешь сама.

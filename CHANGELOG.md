@@ -29,7 +29,7 @@ First release.
 
 ### Added
 - Browser app (`index.html`) with a live colour, sharpen and grain preview, a hold-to-compare button and an RU/EN switch.
-- Python CLI (`enhancer.py`) built on ffmpeg, with batch input, presets, `--dry-run` and a progress readout.
+- Python CLI (`clearcut.py`) built on ffmpeg, with batch input, presets, `--dry-run` and a progress readout.
 - One shared filter chain, in the order: deflicker, denoise, deband, frame interpolation, upscale, sharpen, colour, grain.
 - Presets: Neutral, AI clean, Cinematic, Crisp and Smooth.
 - Upscaling to 1080p, 1440p and 2160p (Lanczos, never scales down).
