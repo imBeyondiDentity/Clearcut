@@ -125,7 +125,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 .banner .name{color:#ff8a6a}
 .banner .desc{display:block;margin:0 0 18px}
 .diag h3{margin-bottom:18px}
-#diagOut{white-space:pre-wrap;word-break:break-word;font-size:12px;
+#diagOut{white-space:pre-wrap;word-break:break-word;font-size:12px;text-align:center;
   color:var(--muted);margin-top:18px}
 #diagOut:empty{display:none}
 
@@ -277,11 +277,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 const I18N = {
   en: {
     kicker: 'Video enhancer',
-    sub: 'Sharpen, clean up and colour-grade your video. Nothing is uploaded, everything runs in your browser.',
+    sub: 'Sharpen, clean up and colour-grade your video. Nothing is uploaded, everything runs in your browser',
     dropName: 'Choose a video',
     dropDesc: '— drop it here or tap. MP4, MOV or WebM, best under about 300 MB',
     hold: 'Hold to compare',
-    previewNote: 'The preview shows colour, sharpening and grain. Denoise, upscale and frame rate are applied on export.',
+    previewNote: 'The preview shows colour, sharpening and grain. Denoise, upscale and frame rate are applied on export',
     gPresets: 'Presets', gSettings: 'Settings',
     gSize: 'Size', gSizeD: '— upscale and frame rate',
     gClean: 'Clean-up', gCleanD: '— noise, sharpness, flicker, banding',
@@ -295,41 +295,41 @@ const I18N = {
     vibrance: 'Vibrance', warmth: 'Warmth', grain: 'Film grain',
     crf: 'Quality (CRF, lower is better)', speed: 'Encode speed',
     fast: 'Fast', balanced: 'Balanced', slow: 'Best',
-    speedNote: 'Best needs the most memory. If the page crashes, pick Balanced, upscale less, or use the CLI.',
+    speedNote: 'Best needs the most memory. If the page crashes, pick Balanced, upscale less, or use the CLI',
     p_neutral: 'Neutral', p_ai: 'AI clean', p_cine: 'Cinematic',
     p_crisp: 'Crisp', p_smooth: 'Smooth',
     reset: 'Reset', run: 'Enhance', cancel: 'Cancel', download: 'Download',
     contact: 'Contact',
     loadEngine: 'Loading the engine (first time only)…',
-    working: 'Enhancing…', done: 'Done. Your file is ready below.',
-    cancelled: 'Cancelled.',
-    errEngine: 'Could not load the video engine. Check your connection and try again.',
-    errFail: 'Processing failed. Try a shorter clip, a lower upscale or a faster speed.',
-    errBig: 'This file is too large for the browser version. Use the Python CLI instead.',
-    errNoFile: 'Choose a video first.',
-    onlyUp: 'Upscaling only applies when the source is smaller.',
-    slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster.',
+    working: 'Enhancing…', done: 'Done. Your file is ready below',
+    cancelled: 'Cancelled',
+    errEngine: 'Could not load the video engine. Check your connection and try again',
+    errFail: 'Processing failed. Try a shorter clip, a lower upscale or a faster speed',
+    errBig: 'This file is too large for the browser version. Use the Python CLI instead',
+    errNoFile: 'Choose a video first',
+    onlyUp: 'Upscaling only applies when the source is smaller',
+    slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster',
     gDiag: 'Diagnostics',
     diagName: 'Report',
     diagDesc: '— checks this device and saves a report you can send to the developer. It has no file names and is never sent automatically',
-    dgCheck: 'Self-check', dgClear: 'Clear report', dgCleared: 'Report cleared.', dgSave: 'Download report', dgCopy: 'Copy report',
-    dgChecking: 'Checking…', dgCopied: 'Report copied.',
-    dgCopyFail: 'Could not copy. Use Download report instead.',
+    dgCheck: 'Self-check', dgClear: 'Clear report', dgCleared: 'Report cleared', dgSave: 'Download report', dgCopy: 'Copy report',
+    dgChecking: 'Checking…', dgCopied: 'Report copied',
+    dgCopyFail: 'Could not copy. Use Download report instead',
     crashName: 'The last run ended unexpectedly',
-    crashBody: 'The page stopped at "{stage}", {pct}%. The tab most likely ran out of memory. A report was saved: download it and send it to the developer.',
+    crashBody: 'The page stopped at "{stage}", {pct}%. The tab most likely ran out of memory. A report was saved: download it and send it to the developer',
     crashHide: 'Dismiss',
-    reportHint: 'A report was saved. Use Download report in Diagnostics below.',
-    stalled: 'No activity for 90 seconds, so the encoder is probably stuck. Cancel, then download the report below.',
-    heavy: 'Heavy job: about {mb} MB of memory is needed. If the page crashes, pick a lighter speed or use the CLI.',
-    noWasm: 'This browser cannot run the video engine (WebAssembly or workers are missing). Use another browser or the CLI.'
+    reportHint: 'A report was saved. Use Download report in Diagnostics below',
+    stalled: 'No activity for 90 seconds, so the encoder is probably stuck. Cancel, then download the report below',
+    heavy: 'Heavy job: about {mb} MB of memory is needed. If the page crashes, pick a lighter speed or use the CLI',
+    noWasm: 'This browser cannot run the video engine (WebAssembly or workers are missing). Use another browser or the CLI'
   },
   ru: {
     kicker: 'Улучшение видео',
-    sub: 'Резкость, чистка и цвет для видео. Ничего не загружается, всё работает в браузере.',
+    sub: 'Резкость, чистка и цвет для видео. Ничего не загружается, всё работает в браузере',
     dropName: 'Выбери видео',
     dropDesc: '— перетащи сюда или нажми. MP4, MOV или WebM, лучше до 300 МБ',
     hold: 'Удерживай для сравнения',
-    previewNote: 'В превью видны цвет, резкость и зерно. Шумоподавление, апскейл и частота кадров применяются при экспорте.',
+    previewNote: 'В превью видны цвет, резкость и зерно. Шумоподавление, апскейл и частота кадров применяются при экспорте',
     gPresets: 'Пресеты', gSettings: 'Настройки',
     gSize: 'Размер', gSizeD: '— апскейл и частота кадров',
     gClean: 'Чистка', gCleanD: '— шум, резкость, мерцание, бандинг',
@@ -343,33 +343,33 @@ const I18N = {
     vibrance: 'Живость', warmth: 'Теплота', grain: 'Плёночное зерно',
     crf: 'Качество (CRF, меньше = лучше)', speed: 'Скорость кодирования',
     fast: 'Быстро', balanced: 'Средне', slow: 'Лучше',
-    speedNote: 'Режиму «Лучше» нужно больше всего памяти. Если страница падает, выбери «Средне», уменьши апскейл или используй CLI.',
+    speedNote: 'Режиму «Лучше» нужно больше всего памяти. Если страница падает, выбери «Средне», уменьши апскейл или используй CLI',
     p_neutral: 'Нейтральный', p_ai: 'Чистка ИИ', p_cine: 'Кино',
     p_crisp: 'Чёткий', p_smooth: 'Плавный',
     reset: 'Сбросить', run: 'Улучшить', cancel: 'Отмена', download: 'Скачать',
     contact: 'Написать',
     loadEngine: 'Загружаю движок (только в первый раз)…',
-    working: 'Улучшаю…', done: 'Готово. Файл ниже.',
-    cancelled: 'Отменено.',
-    errEngine: 'Не удалось загрузить видеодвижок. Проверь интернет и попробуй ещё раз.',
-    errFail: 'Не получилось обработать. Попробуй клип покороче, апскейл поменьше или скорость побыстрее.',
-    errBig: 'Файл слишком большой для браузерной версии. Используй Python CLI.',
-    errNoFile: 'Сначала выбери видео.',
-    onlyUp: 'Апскейл работает только если исходник меньше.',
-    slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее.',
+    working: 'Улучшаю…', done: 'Готово. Файл ниже',
+    cancelled: 'Отменено',
+    errEngine: 'Не удалось загрузить видеодвижок. Проверь интернет и попробуй ещё раз',
+    errFail: 'Не получилось обработать. Попробуй клип покороче, апскейл поменьше или скорость побыстрее',
+    errBig: 'Файл слишком большой для браузерной версии. Используй Python CLI',
+    errNoFile: 'Сначала выбери видео',
+    onlyUp: 'Апскейл работает только если исходник меньше',
+    slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее',
     gDiag: 'Диагностика',
     diagName: 'Отчёт',
     diagDesc: '— проверяет устройство и сохраняет отчёт, который можно отправить разработчику. Имён файлов в нём нет, сам он никуда не уходит',
-    dgCheck: 'Самопроверка', dgClear: 'Очистить отчёт', dgCleared: 'Отчёт очищен.', dgSave: 'Скачать отчёт', dgCopy: 'Копировать отчёт',
-    dgChecking: 'Проверяю…', dgCopied: 'Отчёт скопирован.',
-    dgCopyFail: 'Не получилось скопировать. Скачай отчёт файлом.',
+    dgCheck: 'Самопроверка', dgClear: 'Очистить отчёт', dgCleared: 'Отчёт очищен', dgSave: 'Скачать отчёт', dgCopy: 'Копировать отчёт',
+    dgChecking: 'Проверяю…', dgCopied: 'Отчёт скопирован',
+    dgCopyFail: 'Не получилось скопировать. Скачай отчёт файлом',
     crashName: 'Прошлый запуск оборвался',
-    crashBody: 'Страница остановилась на шаге «{stage}», {pct}%. Скорее всего, вкладке не хватило памяти. Отчёт сохранён: скачай его и отправь разработчику.',
+    crashBody: 'Страница остановилась на шаге «{stage}», {pct}%. Скорее всего, вкладке не хватило памяти. Отчёт сохранён: скачай его и отправь разработчику',
     crashHide: 'Скрыть',
-    reportHint: 'Отчёт сохранён. Скачай его в блоке «Диагностика» ниже.',
-    stalled: '90 секунд без активности, кодировщик, скорее всего, завис. Нажми «Отмена» и скачай отчёт ниже.',
-    heavy: 'Тяжёлая задача, нужно около {mb} МБ памяти. Если страница упадёт, выбери режим полегче или используй CLI.',
-    noWasm: 'Этот браузер не умеет запускать видеодвижок (нет WebAssembly или воркеров). Используй другой браузер или CLI.'
+    reportHint: 'Отчёт сохранён. Скачай его в блоке «Диагностика» ниже',
+    stalled: '90 секунд без активности, кодировщик, скорее всего, завис. Нажми «Отмена» и скачай отчёт ниже',
+    heavy: 'Тяжёлая задача, нужно около {mb} МБ памяти. Если страница упадёт, выбери режим полегче или используй CLI',
+    noWasm: 'Этот браузер не умеет запускать видеодвижок (нет WebAssembly или воркеров). Используй другой браузер или CLI'
   }
 };
 
@@ -599,7 +599,11 @@ async function miniEncode(eng) {
            chain: chain.map(x => x.split('=')[0]).join(' ') };
 }
 
-function setDiag(msg) { $('diagOut').textContent = msg; }
+function setDiag(msg) {
+  const o = $('diagOut');
+  o.textContent = msg;
+  o.style.textAlign = String(msg).includes('\n') ? 'left' : 'center';
+}
 
 async function selfCheck() {
   if (state.running || sess.running) return;
