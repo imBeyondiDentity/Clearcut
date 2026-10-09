@@ -6,7 +6,7 @@ Sharpen, clean up and colour-grade video in one pass. There are two ways to use 
 - **Python CLI** (`clearcut.py`): a thin wrapper around ffmpeg. Faster, handles big files, and can process several clips at once.
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Open Clearcut](https://img.shields.io/badge/Open-Clearcut-ff6a1a?style=flat)](https://imbeyondidentity.github.io/clearcut/)
+[![Open Clearcut](https://img.shields.io/badge/Open-Clearcut-ff6a1a?style=flat)](https://imbeyondidentity.github.io/Clearcut/)
 
 [Русская версия](README_ru.md)
 
