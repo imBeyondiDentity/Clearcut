@@ -2,6 +2,27 @@
 
 All notable changes to this project are recorded here.
 
+## 1.1.0 - 2026-10-09
+
+### Added
+- Browser "black box": the state of a run is saved every second, so a dead tab is detected on the next load.
+- Crash banner and `CRASHREPORT.txt` download, plus a Diagnostics card with Self-check, Download report and Copy report.
+- Self-check that encodes a tiny test clip through the current filter chain.
+- Memory estimate and a warning for heavy settings, and a stall warning when the encoder stops responding.
+- CLI `CRASHREPORT.txt` for ffprobe or ffmpeg failures and unexpected errors.
+
+### Changed
+- Redesigned page to match the Trio and Airband style.
+- Lighter encoder settings for the Best speed in the browser, to use less memory.
+
+### Fixed
+- Reset now clears everything, and the same file can be chosen again.
+- Engine start-up error "failed to import ffmpeg-core.js" (the module core is tried first).
+- The engine is restarted after a crash instead of being reused.
+- Progress listeners no longer stack up over repeated runs.
+- CLI could hang when ffmpeg wrote a lot to stderr.
+- CLI showed a raw traceback for unreadable files.
+
 ## 1.0.0 - 2026-10-08
 
 First release.

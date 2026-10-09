@@ -67,6 +67,27 @@ The result is saved next to the original as `<name>_enhanced.mp4`, or wherever `
 
 Audio is copied untouched when it is AAC, MP3 or ALAC. Anything else is re-encoded to AAC at 320 kbps.
 
+## Crash reports
+
+If something goes wrong, Enhancer can write a
+plain-text report that shows what happened.
+Nothing is sent anywhere: you save the file
+and send it yourself. File names are left out.
+
+- **Browser:** a "black box" saves the state
+  of a run every second. If the tab dies
+  (usually out of memory), the page shows a
+  red banner on the next load. Press
+  **Download report** to get `CRASHREPORT.txt`.
+  The Diagnostics card also has **Self-check**
+  (tests the engine with a tiny clip),
+  **Download report** and **Copy report**.
+- **CLI:** if ffprobe or ffmpeg fails, or
+  something unexpected happens, a
+  `CRASHREPORT.txt` is written to the current
+  folder, with versions, memory, settings, the
+  command and the end of ffmpeg's output.
+
 ## Tips
 
 - For clips straight out of an AI video generator, start with **AI clean**, then nudge sharpen and grain to taste. A little grain hides the plastic look.

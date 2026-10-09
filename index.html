@@ -113,6 +113,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   background:#000;max-height:60vh}
 #dl{margin-top:14px}
 
+/* diagnostics */
+.banner{border-color:#ff8a6a}
+.banner .name{color:#ff8a6a}
+.banner .desc{display:block;margin:0 0 18px}
+.diag h3{margin-bottom:18px}
+#diagOut{white-space:pre-wrap;word-break:break-word;font-size:12px;
+  color:var(--muted);margin-top:18px}
+#diagOut:empty{display:none}
+
 /* footer: Github chip, name between orange dots, contact chip */
 .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
   margin-top:60px}
@@ -135,6 +144,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   <h1>Enhancer</h1>
   <p class="sub" data-i18n="sub"></p>
 </header>
+
+<section class="card banner" id="crash" style="display:none">
+  <h3><span class="name" data-i18n="crashName"></span></h3>
+  <span class="desc" id="crashBody"></span>
+  <div class="chips">
+    <button type="button" class="chip pre" id="crashSave" data-i18n="dgSave"></button>
+    <button type="button" class="chip" id="crashHide" data-i18n="crashHide"></button>
+  </div>
+</section>
 
 <label class="card drop" id="drop">
   <span class="name" data-i18n="dropName"></span>
@@ -215,6 +233,17 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   </div>
 </div>
 
+<div class="eyebrow" data-i18n="gDiag"></div>
+<section class="card diag">
+  <h3><span class="name" data-i18n="diagName"></span> <span class="desc" data-i18n="diagDesc"></span></h3>
+  <div class="chips">
+    <button type="button" class="chip pre" id="dgCheck" data-i18n="dgCheck"></button>
+    <button type="button" class="chip" id="dgSave" data-i18n="dgSave"></button>
+    <button type="button" class="chip" id="dgCopy" data-i18n="dgCopy"></button>
+  </div>
+  <div id="diagOut"></div>
+</section>
+
 <footer class="foot">
   <a class="fchip" href="https://github.com/imBeyondiDentity/video-enhancer" target="_blank" rel="noopener">Github</a>
   <div class="mid"><i></i><span>Enhancer</span><i></i></div>
@@ -269,7 +298,20 @@ const I18N = {
     errBig: 'This file is too large for the browser version. Use the Python CLI instead.',
     errNoFile: 'Choose a video first.',
     onlyUp: 'Upscaling only applies when the source is smaller.',
-    slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster.'
+    slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster.',
+    gDiag: 'Diagnostics',
+    diagName: 'Report',
+    diagDesc: '— checks this device and saves a report you can send to the developer. It has no file names and is never sent automatically',
+    dgCheck: 'Self-check', dgSave: 'Download report', dgCopy: 'Copy report',
+    dgChecking: 'Checking…', dgCopied: 'Report copied.',
+    dgCopyFail: 'Could not copy. Use Download report instead.',
+    crashName: 'The last run ended unexpectedly',
+    crashBody: 'The page stopped at "{stage}", {pct}%. The tab most likely ran out of memory. A report was saved: download it and send it to the developer.',
+    crashHide: 'Dismiss',
+    reportHint: 'A report was saved. Use Download report in Diagnostics below.',
+    stalled: 'No activity for 90 seconds, so the encoder is probably stuck. Cancel, then download the report below.',
+    heavy: 'Heavy job: about {mb} MB of memory is needed. If the page crashes, pick a lighter speed or use the CLI.',
+    noWasm: 'This browser cannot run the video engine (WebAssembly or workers are missing). Use another browser or the CLI.'
   },
   ru: {
     kicker: 'Улучшение видео',
@@ -304,7 +346,20 @@ const I18N = {
     errBig: 'Файл слишком большой для браузерной версии. Используй Python CLI.',
     errNoFile: 'Сначала выбери видео.',
     onlyUp: 'Апскейл работает только если исходник меньше.',
-    slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее.'
+    slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее.',
+    gDiag: 'Диагностика',
+    diagName: 'Отчёт',
+    diagDesc: '— проверяет устройство и сохраняет отчёт, который можно отправить разработчику. Имён файлов в нём нет, сам он никуда не уходит',
+    dgCheck: 'Самопроверка', dgSave: 'Скачать отчёт', dgCopy: 'Копировать отчёт',
+    dgChecking: 'Проверяю…', dgCopied: 'Отчёт скопирован.',
+    dgCopyFail: 'Не получилось скопировать. Скачай отчёт файлом.',
+    crashName: 'Прошлый запуск оборвался',
+    crashBody: 'Страница остановилась на шаге «{stage}», {pct}%. Скорее всего, вкладке не хватило памяти. Отчёт сохранён: скачай его и отправь разработчику.',
+    crashHide: 'Скрыть',
+    reportHint: 'Отчёт сохранён. Скачай его в блоке «Диагностика» ниже.',
+    stalled: '90 секунд без активности, кодировщик, скорее всего, завис. Нажми «Отмена» и скачай отчёт ниже.',
+    heavy: 'Тяжёлая задача, нужно около {mb} МБ памяти. Если страница упадёт, выбери режим полегче или используй CLI.',
+    noWasm: 'Этот браузер не умеет запускать видеодвижок (нет WebAssembly или воркеров). Используй другой браузер или CLI.'
   }
 };
 
@@ -347,6 +402,395 @@ const state = { file: null, srcW: 0, srcH: 0, url: null, running: false };
 
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/* ---------- diagnostics: black box, self-check, crash report ---------- */
+// The black box saves the state of a run to localStorage every second. If the
+// tab dies (usually out of memory) nothing else can run, but the last saved
+// state is still there on the next load and becomes CRASHREPORT.txt.
+const APP_VERSION = '1.1.0';
+const KEY_NOW = 'enhancer-diag-now';
+const KEY_CRASH = 'enhancer-diag-crash';
+const STALL_SECONDS = 90;
+
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+
+const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+function heapMB() {
+  const m = window.performance && performance.memory;
+  return m ? { used: Math.round(m.usedJSHeapSize / 1048576),
+               limit: Math.round(m.jsHeapSizeLimit / 1048576) } : null;
+}
+
+function envInfo() {
+  const nav = navigator, conn = nav.connection || {};
+  return {
+    ua: nav.userAgent,
+    platform: (nav.userAgentData && nav.userAgentData.platform) || nav.platform || '?',
+    mobile: isMobile(),
+    cores: nav.hardwareConcurrency || null,
+    deviceMemoryGB: nav.deviceMemory || null,
+    screen: `${screen.width}x${screen.height} @${window.devicePixelRatio || 1}`,
+    lang: nav.language || '?',
+    online: nav.onLine,
+    net: conn.effectiveType || null,
+    wasm: typeof WebAssembly === 'object',
+    worker: typeof Worker === 'function',
+    sab: typeof SharedArrayBuffer === 'function',
+    isolated: !!window.crossOriginIsolated,
+    // A file: path would show the user's folder names, so it is left out.
+    page: location.protocol === 'file:'
+      ? 'file:// (opened from a file)'
+      : `${location.protocol}//${location.host}${location.pathname}`
+  };
+}
+
+function newSession() {
+  return { v: APP_VERSION, started: Date.now(), running: false, stage: 'idle',
+           progress: 0, beat: 0, env: envInfo(), run: null, selfCheck: null,
+           events: [], mem: [], ff: [], errors: [] };
+}
+
+// A record that still says "running" when the page loads again never finished.
+const prevSess = lsGet(KEY_NOW);
+if (prevSess && prevSess.running) lsSet(KEY_CRASH, prevSess);
+let crashed = lsGet(KEY_CRASH);   // stays until it is downloaded or dismissed
+let sess = newSession();
+
+function save() { lsSet(KEY_NOW, sess); }
+
+function note(kind, data) {
+  const e = { t: Date.now(), k: kind };
+  if (data !== undefined) e.d = data;
+  sess.events.push(e);
+  if (sess.events.length > 80) sess.events.shift();
+  save();
+}
+
+function stage(name, data) { sess.stage = name; note('stage:' + name, data); }
+
+function fail(where, err) {
+  const msg = String((err && err.message) || err || 'unknown');
+  const stack = String((err && err.stack) || '').split('\n').slice(0, 5).join('\n');
+  sess.errors.push({ t: Date.now(), where, msg: msg.slice(0, 400), stack });
+  if (sess.errors.length > 12) sess.errors.shift();
+  note('error', where);
+}
+
+/* page life cycle: tells a killed background tab from a crash in front */
+document.addEventListener('visibilitychange', () => note('visibility', document.visibilityState));
+window.addEventListener('pagehide', e => note('pagehide', { persisted: !!e.persisted }));
+window.addEventListener('pageshow', e => note('pageshow', { persisted: !!e.persisted }));
+document.addEventListener('freeze', () => note('freeze'));
+document.addEventListener('resume', () => note('resume'));
+window.addEventListener('error', e => fail('window', e.error || e.message));
+window.addEventListener('unhandledrejection', e => fail('promise', e.reason));
+
+/* heartbeat: once a second while a run is going */
+let beatTimer = null, beatN = 0, lastActivity = 0, stallNoted = false;
+
+function startBeat() {
+  stopBeat();
+  beatN = 0; lastActivity = Date.now(); stallNoted = false;
+  beatTimer = setInterval(() => {
+    const now = Date.now();
+    sess.beat = now;
+    if (beatN++ % 5 === 0) {                       // a memory sample every 5 s
+      const h = heapMB();
+      if (h) { sess.mem.push({ t: now, used: h.used, limit: h.limit }); if (sess.mem.length > 60) sess.mem.shift(); }
+    }
+    if (!stallNoted && sess.stage === 'encode' && now - lastActivity > STALL_SECONDS * 1000) {
+      stallNoted = true;
+      note('stall', { idleSec: Math.round((now - lastActivity) / 1000) });
+      setStatus(t('stalled'), true);
+    }
+    save();
+  }, 1000);
+}
+function stopBeat() { if (beatTimer) { clearInterval(beatTimer); beatTimer = null; } }
+
+function blackboxOn(stageName) { sess.running = true; stage(stageName); startBeat(); }
+function blackboxOff(outcome) { stopBeat(); sess.running = false; stage(outcome); }
+
+/* rough memory estimate; it is written to the report so the numbers can be tuned */
+function estimateMemory() {
+  if (!state.file) return null;
+  const fileMB = state.file.size / 1048576;
+  const known = state.srcW > 0 && state.srcH > 0;
+  const up = known && S.height > state.srcH ? S.height / state.srcH : 1;
+  const frameMB = known ? state.srcW * up * state.srcH * up * 1.5 / 1048576 : 6;
+  const held = { ultrafast: 6, veryfast: 14, fast: 20 }[speed] || 14;
+  const extra = 4 + (S.fps ? (S.interp === 'motion' ? 12 : 4) : 0) + (S.deflicker ? 6 : 0);
+  const outMB = Math.max(fileMB, 5) * up;
+  const wasmMB = fileMB + outMB + (held + extra) * frameMB + 60;  // files in memory + frames + engine
+  const jsMB = fileMB + outMB * 2;                                // upload copy, read-back copy, blob
+  const totalMB = wasmMB + jsMB;
+  const limit = isMobile() ? 600 : 1800;
+  const r = Math.round;
+  return { fileMB: r(fileMB), outMB: r(outMB), frameMB: r(frameMB * 10) / 10,
+           frames: held + extra, wasmMB: r(wasmMB), jsMB: r(jsMB), totalMB: r(totalMB),
+           limit, warn: totalMB > limit };
+}
+
+function quickChecks() {
+  const items = [];
+  const add = (level, label, detail) => items.push({ level, label, detail: detail || '' });
+  add(typeof WebAssembly === 'object' ? 'ok' : 'fail', 'WebAssembly');
+  add(typeof Worker === 'function' ? 'ok' : 'fail', 'Web Workers');
+  const stored = lsSet('enhancer-probe', 1) && lsGet('enhancer-probe') === 1;
+  lsDel('enhancer-probe');
+  add(stored ? 'ok' : 'warn', 'Storage', stored ? '' : 'a crash report cannot be saved');
+  add(location.protocol === 'file:' ? 'warn' : 'ok', 'Page',
+      location.protocol === 'file:' ? 'opened from a file, the web link works better'
+                                    : location.protocol.replace(':', ''));
+  const env = sess.env;
+  add('info', 'Device', `${env.mobile ? 'mobile' : 'desktop'}, ${env.cores || '?'} cores, ` +
+      (env.deviceMemoryGB ? env.deviceMemoryGB + ' GB RAM' : 'RAM unknown'));
+  const h = heapMB();
+  if (h) add('info', 'JS heap', `${h.used} of ${h.limit} MB`);
+  add(navigator.onLine || ffmpeg ? 'ok' : 'warn', 'Network', navigator.onLine ? 'online' : 'offline');
+  const est = estimateMemory();
+  if (est) add(est.warn ? 'warn' : 'ok', 'Memory estimate',
+      `about ${est.totalMB} MB for this job (limit used: ${est.limit} MB)`);
+  return { items, est };
+}
+
+function renderChecks(items) {
+  const tag = { ok: 'OK', warn: 'WARN', fail: 'FAIL', info: 'INFO' };
+  return items.map(i => `${tag[i.level].padEnd(5)} ${i.label}${i.detail ? ': ' + i.detail : ''}`).join('\n');
+}
+
+// Encodes 10 tiny raw frames through the current filter chain, so a missing
+// filter or a broken encoder shows up here and not on a big file.
+async function miniEncode(eng) {
+  const w = 160, h = 90, n = 10, fsz = w * h * 3 / 2;
+  const raw = new Uint8Array(fsz * n);
+  for (let f = 0; f < n; f++) {
+    const o = f * fsz;
+    for (let i = 0; i < w * h; i++) raw[o + i] = ((i % w) * 2 + f * 12) & 255;
+    raw.fill(128, o + w * h, o + fsz);
+  }
+  const chain = buildFilters(Object.assign({}, S, { height: 0 }), h);
+  await eng.writeFile('probe.yuv', raw);
+  const t0 = performance.now();
+  let code = -1, size = 0;
+  try {
+    code = await eng.exec(['-f', 'rawvideo', '-pixel_format', 'yuv420p', '-video_size', `${w}x${h}`,
+      '-framerate', '10', '-i', 'probe.yuv', '-vf', chain.join(','), '-c:v', 'libx264',
+      '-preset', 'ultrafast', '-crf', '28', 'probe.mp4']);
+    if (code === 0) size = (await eng.readFile('probe.mp4')).length;
+  } finally {
+    for (const f of ['probe.yuv', 'probe.mp4']) { try { await eng.deleteFile(f); } catch (e) { /* ignore */ } }
+  }
+  return { code, size, ms: Math.round(performance.now() - t0),
+           chain: chain.map(x => x.split('=')[0]).join(' ') };
+}
+
+function setDiag(msg) { $('diagOut').textContent = msg; }
+
+async function selfCheck() {
+  if (state.running || sess.running) return;
+  setDiag(t('dgChecking'));
+  const { items } = quickChecks();
+  const add = (level, label, detail) => items.push({ level, label, detail: detail || '' });
+  const first = e => String((e && e.message) || e).split('\n')[0].slice(0, 120);
+  blackboxOn('selfcheck');
+  let eng = null;
+  try {
+    const t0 = performance.now();
+    stage('selfcheck:engine');
+    eng = await ensureEngine();
+    add('ok', 'Engine', `loaded in ${Math.round(performance.now() - t0)} ms`);
+  } catch (e) {
+    fail('selfcheck:engine', e);
+    add('fail', 'Engine', first(e));
+  }
+  if (eng) {
+    try {
+      sess.ff = [];
+      stage('selfcheck:version');
+      await eng.exec(['-version']);
+      const ver = sess.ff.find(l => /^ffmpeg version/.test(l));
+      add(ver ? 'ok' : 'warn', 'ffmpeg', ver ? ver.slice(0, 40) : 'no version line');
+    } catch (e) { fail('selfcheck:version', e); add('fail', 'ffmpeg', first(e)); }
+    try {
+      stage('selfcheck:encode');
+      const r = await miniEncode(eng);
+      add(r.code === 0 && r.size > 0 ? 'ok' : 'fail', 'Mini encode',
+          r.code === 0 ? `${r.size} bytes in ${r.ms} ms (${r.chain})` : `exit ${r.code}, see the log in the report`);
+    } catch (e) { fail('selfcheck:encode', e); add('fail', 'Mini encode', first(e)); }
+  }
+  blackboxOff('selfcheck-end');
+  sess.selfCheck = { t: Date.now(), items };
+  save();
+  setDiag(renderChecks(items));
+}
+
+/* ---------- the report ---------- */
+const W = 58;   // narrow lines, so the file reads well on a phone
+
+function kv(key, val, pad = 13) {
+  const s = String(val === undefined || val === null || val === '' ? '-' : val);
+  const room = W - pad, out = [];
+  for (let i = 0; i === 0 || i < s.length; i += room) {
+    out.push((i === 0 ? (key + ':').padEnd(pad) : ' '.repeat(pad)) + s.slice(i, i + room));
+  }
+  return out.join('\n');
+}
+
+function chunk(s, indent = 2) {
+  const room = W - indent, out = [];
+  for (let i = 0; i === 0 || i < s.length; i += room) out.push(' '.repeat(indent) + s.slice(i, i + room));
+  return out.join('\n');
+}
+
+const clock = ms => new Date(ms).toISOString().replace('T', ' ').slice(0, 19) + 'Z';
+
+function verdict(d) {
+  const out = [];
+  const ev = d.events || [];
+  const run = d.run || {};
+  const during = ev.filter(e => e.t >= (run.t0 || 0));
+  if (d.running) {
+    if (during.some(e => e.k === 'pagehide')) out.push('The page was closed or reloaded while it was working.');
+    else if (during.some(e => e.k === 'visibility' && e.d === 'hidden')) {
+      out.push('The tab went into the background while it was working. Phones often kill background tabs. Keep the screen on and the tab open.');
+    } else out.push('The tab died while it was in front. That almost always means it ran out of memory.');
+    out.push(`It stopped at "${d.stage}" (${d.progress} %).`);
+  }
+  if (during.some(e => e.k === 'stall')) out.push(`No activity for ${STALL_SECONDS} s: the encoder was probably stuck.`);
+  const logs = (d.ff || []).join(' ');
+  if (/out of memory|memory access out of bounds|abort|cannot allocate/i.test(logs)) out.push('ffmpeg reported a memory problem.');
+  if (/No such filter|Unknown encoder|Error initializing filter/i.test(logs)) out.push('A filter or encoder is missing from this ffmpeg.wasm build, see the log.');
+  if (run.est && run.est.warn) out.push(`The memory estimate was high (${run.est.totalMB} MB, limit used ${run.est.limit} MB).`);
+  if ((d.errors || []).length) out.push(`${d.errors.length} error(s) were recorded, see ERRORS.`);
+  if (!out.length) out.push('Nothing wrong was recorded.');
+  return out;
+}
+
+function sessionText(d, title, withDevice = true) {
+  const t0 = (d.run && d.run.t0) || d.started;
+  const rel = ms => (ms < t0 ? '-' : '+') + (Math.abs(ms - t0) / 1000).toFixed(1) + 's';
+  const L = [`--- ${title} ---`];
+  L.push(kv('Started', clock(d.started)));
+  L.push(kv('Version', d.v));
+  L.push(kv('Running', d.running ? 'YES, it never finished' : 'no'));
+  L.push(kv('Stage', d.stage));
+  L.push(kv('Progress', d.progress + ' %'));
+  if (d.beat) L.push(kv('Last beat', rel(d.beat)));
+  L.push('', 'VERDICT');
+  verdict(d).forEach(v => L.push(chunk('- ' + v, 0)));
+
+  const e = d.env || {};
+  if (withDevice) {
+    L.push('', 'DEVICE');
+    L.push(kv('System', e.platform), kv('Mobile', e.mobile ? 'yes' : 'no'));
+    L.push(kv('CPU cores', e.cores), kv('RAM (GB)', e.deviceMemoryGB || 'unknown'));
+    L.push(kv('Screen', e.screen), kv('Network', `${e.online ? 'online' : 'offline'} ${e.net || ''}`));
+    L.push(kv('Wasm/Worker', `${e.wasm ? 'yes' : 'NO'} / ${e.worker ? 'yes' : 'NO'}`));
+    L.push(kv('Threads', `SharedArrayBuffer ${e.sab ? 'yes' : 'no'}, isolated ${e.isolated ? 'yes' : 'no'}`));
+    L.push(kv('Browser', e.ua));
+  }
+
+  const r = d.run;
+  if (r) {
+    const f = r.file || {};
+    L.push('', 'FILE (name is not recorded)');
+    L.push(kv('Type', `${f.ext} ${f.type}`), kv('Size', `${f.mb} MB`));
+    L.push(kv('Video', `${f.w}x${f.h}, ${f.sec === null ? '?' : f.sec + ' s'}`));
+    L.push('', 'SETTINGS (changed ones)');
+    const changed = Object.entries(r.settings || {}).filter(([k, v]) => v !== DEFAULTS[k]);
+    L.push(chunk(changed.map(([k, v]) => `${k}=${v}`).join(' ') || '(defaults)'));
+    L.push(kv('Speed', r.speed));
+    if (r.est) {
+      L.push('', 'MEMORY ESTIMATE (rough)');
+      L.push(kv('Wasm side', `${r.est.wasmMB} MB`), kv('JS side', `${r.est.jsMB} MB`));
+      L.push(kv('Total', `${r.est.totalMB} MB, limit used ${r.est.limit} MB`));
+      L.push(kv('Frames', `${r.est.frames} held, ${r.est.frameMB} MB each`));
+    }
+    if (r.args) { L.push('', 'FFMPEG ARGS', chunk(r.args)); }
+  }
+
+  const ev = (d.events || []).slice(-40);
+  L.push('', 'TIMELINE');
+  ev.forEach(x => L.push(chunk(`${rel(x.t)}  ${x.k}${x.d !== undefined ? ' ' + JSON.stringify(x.d) : ''}`, 1)));
+
+  if ((d.mem || []).length) {
+    const m = d.mem.slice(-12);
+    L.push('', 'JS HEAP (MB used / limit)');
+    m.forEach(x => L.push(`  ${rel(x.t).padEnd(9)} ${x.used} / ${x.limit}`));
+    L.push(kv('Peak', Math.max(...d.mem.map(x => x.used)) + ' MB'));
+  }
+
+  if ((d.ff || []).length) {
+    L.push('', 'FFMPEG LOG (last lines)');
+    d.ff.slice(-25).forEach(x => L.push(chunk(x, 2)));
+  }
+
+  if ((d.errors || []).length) {
+    L.push('', 'ERRORS');
+    d.errors.forEach(x => {
+      L.push(chunk(`${rel(x.t)} ${x.where}: ${x.msg}`, 1));
+      if (x.stack) x.stack.split('\n').forEach(s => L.push(chunk(s.trim(), 3)));
+    });
+  }
+
+  if (d.selfCheck) {
+    L.push('', `SELF-CHECK (${clock(d.selfCheck.t)})`);
+    renderChecks(d.selfCheck.items).split('\n').forEach(x => L.push(chunk(x, 1)));
+  }
+  return L.join('\n');
+}
+
+function buildReport() {
+  const L = ['ENHANCER CRASHREPORT', '===================='];
+  L.push(kv('Created', clock(Date.now())));
+  L.push(kv('App', `Enhancer ${APP_VERSION} (browser)`));
+  L.push(kv('Page', sess.env.page));
+  L.push(kv('Engine', `ffmpeg.wasm ${VER.ffmpeg}, core ${VER.core}`));
+  L.push(kv('Privacy', 'no file names, nothing is sent anywhere'), '');
+  const old = lsGet(KEY_CRASH);
+  if (old) L.push(sessionText(old, 'PREVIOUS SESSION (ended unexpectedly)'), '');
+  L.push(sessionText(sess, 'THIS SESSION', !old));
+  return L.join('\n') + '\n';
+}
+
+function downloadReport() {
+  const blob = new Blob([buildReport()], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'CRASHREPORT.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+async function copyReport() {
+  const text = buildReport();
+  let done = false;
+  try { await navigator.clipboard.writeText(text); done = true; } catch (e) { /* try the fallback */ }
+  if (!done) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { done = document.execCommand('copy'); } catch (e) { /* ignore */ }
+    ta.remove();
+  }
+  setDiag(done ? t('dgCopied') : t('dgCopyFail'));
+}
+
+function showCrash() {
+  const box = $('crash');
+  if (!crashed) { box.style.display = 'none'; return; }
+  $('crashBody').textContent = t('crashBody')
+    .replace('{stage}', crashed.stage || '?').replace('{pct}', crashed.progress || 0);
+  box.style.display = 'block';
+}
+
+function clearCrash() { lsDel(KEY_CRASH); crashed = null; showCrash(); }
+
 
 /* ---------- filter chain (same order and maths as enhancer.py) ---------- */
 function buildFilters(s, srcH) {
@@ -520,6 +964,7 @@ function setLang(l) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.textContent = t(el.dataset.i18n);
   });
+  showCrash();
   renderChips();
   try { localStorage.setItem('enhancer-lang', l); } catch (e) { /* ignore */ }
 }
@@ -631,16 +1076,45 @@ async function bootEngine() {
 
 async function ensureEngine() {
   if (ffmpeg) return ffmpeg;
-  if (!loading) loading = bootEngine().then(i => { ffmpeg = i; return i; })
-    .finally(() => { loading = null; });
+  if (!loading) {
+    const t0 = performance.now();
+    loading = bootEngine().then(inst => {
+      // Registered once per engine, so repeated runs do not stack listeners.
+      inst.on('log', ({ message }) => {
+        tail.push(message); tail = tail.slice(-8);
+        sess.ff.push(String(message).slice(0, 160));
+        if (sess.ff.length > 60) sess.ff.shift();
+        lastActivity = Date.now();
+      });
+      inst.on('progress', ({ progress }) => {
+        lastActivity = Date.now();
+        const pct = clamp(progress * 100, 0, 100);
+        sess.progress = Math.round(pct);
+        $('bar').style.width = pct.toFixed(1) + '%';
+      });
+      note('engine-ready', { ms: Math.round(performance.now() - t0) });
+      ffmpeg = inst;
+      return inst;
+    }).finally(() => { loading = null; });
+  }
   return loading;
 }
 
 /* ---------- run ---------- */
 let tail = [];
+
+function preflight() {
+  const q = quickChecks();
+  const bad = q.items.find(i => i.level === 'fail');
+  return { est: q.est, blocker: bad ? t('noWasm') : null };
+}
+
 async function run() {
   if (!state.file) { setStatus(t('errNoFile'), true); return; }
-  if (state.running) return;
+  if (state.running || sess.running) return;
+  const pre = preflight();
+  if (pre.blocker) { setStatus(pre.blocker, true); return; }
+
   state.running = true;
   $('run').disabled = true;
   $('cancel').style.display = '';
@@ -652,39 +1126,59 @@ async function run() {
   const notes = [];
   if (S.height && state.srcH && S.height <= state.srcH) notes.push(t('onlyUp'));
   if (S.fps && S.interp === 'motion') notes.push(t('slowInterp'));
+  if (pre.est && pre.est.warn) notes.push(t('heavy').replace('{mb}', pre.est.totalMB));
+
+  const f = state.file, v = $('vid');
+  const ext = (f.name.match(/\.[a-z0-9]+$/i) || ['.mp4'])[0].toLowerCase();
+  sess.run = {
+    t0: Date.now(),
+    file: { ext, mb: Math.round(f.size / 104857.6) / 10, type: f.type || '?',
+            w: state.srcW, h: state.srcH,
+            sec: isFinite(v.duration) ? Math.round(v.duration * 10) / 10 : null },
+    settings: Object.assign({}, S), speed, est: pre.est, vf: null, args: null
+  };
+  sess.ff = []; sess.mem = []; sess.progress = 0;
+  blackboxOn('engine-load');
 
   let ok = false;
   try {
     let eng;
     try { eng = await ensureEngine(); }
-    catch (e) { setStatus(t('errEngine') + '\n' + e.message, true); return; }
-
-    eng.on('progress', ({ progress }) => {
-      $('bar').style.width = clamp(progress * 100, 0, 100).toFixed(1) + '%';
-    });
-    eng.on('log', ({ message }) => { tail.push(message); tail = tail.slice(-6); });
+    catch (e) {
+      fail('engine', e);
+      setStatus(t('errEngine') + '\n' + e.message + '\n' + t('reportHint'), true);
+      return;
+    }
 
     setStatus([t('working')].concat(notes).join('  '));
-    const ext = (state.file.name.match(/\.[a-z0-9]+$/i) || ['.mp4'])[0].toLowerCase();
+    stage('write-input');
     const inName = 'input' + ext;
-    await eng.writeFile(inName, new Uint8Array(await state.file.arrayBuffer()));
+    await eng.writeFile(inName, new Uint8Array(await f.arrayBuffer()));
 
     const vf = buildFilters(S, state.srcH).join(',');
     const base = ['-i', inName, '-vf', vf, '-c:v', 'libx264', '-crf', String(S.crf),
       '-preset', speed];
     if (SPEED_PARAMS[speed]) base.push('-x264-params', SPEED_PARAMS[speed]);
     base.push('-movflags', '+faststart');
+    sess.run.vf = vf;
+    sess.run.args = base.join(' ');
 
+    stage('encode');
+    lastActivity = Date.now();
     tail = [];
     let code = await eng.exec([...base, '-c:a', 'copy', 'out.mp4']);
+    note('exec', { code });
     // Retry with re-encoded audio only for an ordinary error, never after the
     // engine itself ran out of memory and aborted.
-    const crashed = /abort|memory|OOM|out of bounds/i.test(tail.join(' '));
-    if (code !== 0 && state.running && !crashed) {
+    const aborted = /abort|memory|OOM|out of bounds/i.test(tail.join(' '));
+    if (code !== 0 && state.running && !aborted) {
+      note('retry-audio');
       code = await eng.exec([...base, '-c:a', 'aac', '-b:a', '320k', 'out.mp4']);
+      note('exec', { code });
     }
     if (code !== 0) throw new Error('ffmpeg exit ' + code);
 
+    stage('read-output');
     const data = await eng.readFile('out.mp4');
     const blob = new Blob([data.buffer], { type: 'video/mp4' });
     const url = URL.createObjectURL(blob);
@@ -694,7 +1188,7 @@ async function run() {
     out.src = url;
     const dl = $('dl');
     dl.href = url;
-    dl.download = state.file.name.replace(/\.[^.]+$/, '') + '_enhanced.mp4';
+    dl.download = f.name.replace(/\.[^.]+$/, '') + '_enhanced.mp4';
     $('result').style.display = 'block';
     $('bar').style.width = '100%';
     setStatus(t('done'));
@@ -703,11 +1197,13 @@ async function run() {
     $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (e) {
     if (state.running) {
-      setStatus(t('errFail'), true);
+      fail('run', e);
+      setStatus(t('errFail') + '\n' + t('reportHint'), true);
       // A crashed engine cannot be reused: drop it so the next try starts clean.
       if (ffmpeg) { try { ffmpeg.terminate(); } catch (e2) { /* ignore */ } ffmpeg = null; }
     }
   } finally {
+    blackboxOff(ok ? 'done' : (state.running ? 'failed' : 'cancelled'));
     state.running = false;
     $('run').disabled = false;
     $('cancel').style.display = 'none';
@@ -718,6 +1214,7 @@ async function run() {
 function cancel() {
   if (!state.running) return;
   state.running = false;
+  note('cancel');
   if (ffmpeg) { try { ffmpeg.terminate(); } catch (e) { /* ignore */ } ffmpeg = null; }
   setStatus(t('cancelled'));
 }
@@ -774,6 +1271,16 @@ function init() {
   $('reset').addEventListener('click', resetAll);
   $('run').addEventListener('click', run);
   $('cancel').addEventListener('click', cancel);
+
+  $('dgCheck').addEventListener('click', selfCheck);
+  $('dgSave').addEventListener('click', downloadReport);
+  $('dgCopy').addEventListener('click', copyReport);
+  $('crashSave').addEventListener('click', () => { downloadReport(); clearCrash(); });
+  $('crashHide').addEventListener('click', clearCrash);
+
+  const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+  note('load', { nav: nav ? nav.type : '?', previousRunUnfinished: !!(prevSess && prevSess.running) });
+  showCrash();
   applyPreview();
 }
 init();

@@ -17,13 +17,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import platform
 import shutil
 import subprocess
 import sys
+import tempfile
+import textwrap
+import threading
+import time
+import traceback
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
 @dataclass
@@ -135,17 +142,32 @@ def build_filters(s: Settings, src_height: int) -> list[str]:
     return chain
 
 
+class ProbeError(Exception):
+    """ffprobe failed or the file has no video."""
+
+    def __init__(self, msg: str, detail: str = ""):
+        super().__init__(msg)
+        self.detail = detail
+
+
 def probe(path: Path) -> dict:
     """Read size, duration and audio codec with ffprobe."""
-    out = subprocess.run(
+    res = subprocess.run(
         [
             "ffprobe", "-v", "error", "-print_format", "json",
             "-show_streams", "-show_format", str(path),
         ],
-        capture_output=True, text=True, check=True,
-    ).stdout
-    data = json.loads(out)
-    video = next(x for x in data["streams"] if x["codec_type"] == "video")
+        capture_output=True, text=True,
+    )
+    if res.returncode != 0:
+        raise ProbeError("ffprobe could not read the file",
+                         res.stderr.strip())
+    try:
+        data = json.loads(res.stdout)
+        video = next(x for x in data["streams"]
+                     if x["codec_type"] == "video")
+    except (ValueError, KeyError, StopIteration):
+        raise ProbeError("no video stream found", res.stderr.strip())
     audio = next((x for x in data["streams"] if x["codec_type"] == "audio"), None)
     return {
         "width": int(video["width"]),
@@ -179,23 +201,183 @@ def build_command(src: Path, dst: Path, s: Settings, info: dict,
     return cmd
 
 
-def run_with_progress(cmd: list[str], duration: float) -> int:
+def run_with_progress(cmd: list[str], duration: float) -> tuple[int, str]:
+    """Run ffmpeg, show progress, return (exit code, stderr tail)."""
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        errors="replace",
     )
-    assert proc.stdout is not None
+    assert proc.stdout is not None and proc.stderr is not None
+    lines: list[str] = []
+
+    # Drain stderr on its own thread. Reading it after stdout can
+    # deadlock once ffmpeg fills the stderr pipe.
+    def drain() -> None:
+        for ln in proc.stderr:  # type: ignore[union-attr]
+            lines.append(ln.rstrip())
+            del lines[:-40]
+
+    t = threading.Thread(target=drain, daemon=True)
+    t.start()
     for line in proc.stdout:
         key, _, value = line.strip().partition("=")
         if key == "out_time_us" and duration and value.isdigit():
             done = min(100.0, int(value) / 1_000_000 / duration * 100)
             print(f"\r  {done:5.1f}%", end="", flush=True)
-    err = proc.stderr.read() if proc.stderr else ""
     code = proc.wait()
+    t.join(timeout=5)
     print("\r  100.0%" if code == 0 else "\r  failed ", flush=True)
+    tail = "\n".join(lines)
     if code != 0:
-        print(err.strip().splitlines()[-1] if err.strip() else "ffmpeg failed",
-              file=sys.stderr)
-    return code
+        last = [x for x in lines if x.strip()]
+        print(last[-1] if last else "ffmpeg failed", file=sys.stderr)
+    return code, tail
+
+
+# ---------- crash report ----------
+
+W = 58  # report width, so it reads well in a narrow window
+
+
+def _ram_gb() -> str:
+    try:
+        n = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+        return f"{n / 2**30:.1f} GB"
+    except (AttributeError, ValueError, OSError):
+        return "unknown"
+
+
+def _tool_version(tool: str) -> str:
+    try:
+        out = subprocess.run([tool, "-version"], capture_output=True,
+                             text=True, timeout=10).stdout
+        return out.splitlines()[0][:W - 14] if out else "no output"
+    except (OSError, subprocess.SubprocessError):
+        return "not found"
+
+
+def _hints(code: int | None, tail: str, info: dict | None,
+           s: Settings | None) -> list[str]:
+    t = tail.lower()
+    out: list[str] = []
+    if code is not None and code < 0:
+        out.append("ffmpeg was killed by a signal. On Linux that is "
+                   "often the out-of-memory killer. Try a lighter "
+                   "--x264-preset, no --fps motion, or a lower --height.")
+    if "cannot allocate memory" in t or "out of memory" in t:
+        out.append("ffmpeg ran out of memory.")
+    if "unknown encoder" in t or "encoder 'libx26" in t:
+        out.append("This ffmpeg build lacks the x264/x265 encoder.")
+    if "no such filter" in t or "filter not found" in t:
+        out.append("This ffmpeg build lacks a filter. Update ffmpeg.")
+    if "invalid argument" in t and "preset" in t:
+        out.append("The --x264-preset value is not valid.")
+    if "permission denied" in t:
+        out.append("No permission to write the output file.")
+    if "no space left" in t:
+        out.append("The disk is full.")
+    if s and info and s.interp == "motion" and s.fps:
+        out.append("Motion interpolation is very heavy; try blend.")
+    if info and s and max(s.height, 0) >= 2160:
+        out.append("4K output needs a lot of memory.")
+    return out or ["No known pattern matched. Send this file to the "
+                   "developer."]
+
+
+def write_crash_report(kind: str, message: str, *, cmd: list[str] | None = None,
+                       src: Path | None = None, dst: Path | None = None,
+                       info: dict | None = None,
+                       settings: Settings | None = None,
+                       code: int | None = None, tail: str = "",
+                       exc: BaseException | None = None) -> Path | None:
+    """Write CRASHREPORT.txt. File names are removed from the text."""
+    secrets = []
+    for p in (src, dst):
+        if p:
+            secrets += [str(p), p.name]
+    secrets = sorted({x for x in secrets if x}, key=len, reverse=True)
+
+    def clean(text: str) -> str:
+        for x in secrets:
+            text = text.replace(x, "<file>")
+        home = str(Path.home())
+        return text.replace(home, "~") if home else text
+
+    def put(lines: list[str], key: str, val: object) -> None:
+        wrapped = textwrap.wrap(str(val), W - 14) or [""]
+        lines.append(f"{key:<13} {wrapped[0]}")
+        lines += [" " * 14 + w for w in wrapped[1:]]
+
+    rule = "-" * W
+    L: list[str] = ["ENHANCER CRASH REPORT", "=" * W]
+    put(L, "Time", time.strftime("%Y-%m-%d %H:%M:%S"))
+    put(L, "Kind", kind)
+    put(L, "Message", clean(message))
+    put(L, "Exit code", code if code is not None else "n/a")
+    L += [rule, "SYSTEM"]
+    put(L, "Enhancer", __version__)
+    put(L, "Python", platform.python_version())
+    put(L, "OS", platform.platform())
+    put(L, "RAM", _ram_gb())
+    try:
+        put(L, "Disk free", f"{shutil.disk_usage('.').free / 2**30:.1f} GB")
+    except OSError:
+        put(L, "Disk free", "unknown")
+    put(L, "ffmpeg", _tool_version("ffmpeg"))
+    put(L, "ffprobe", _tool_version("ffprobe"))
+    if info:
+        L += [rule, "INPUT"]
+        put(L, "Size", f"{info.get('width')}x{info.get('height')}")
+        put(L, "Duration", f"{info.get('duration', 0):.1f} s")
+        put(L, "Audio", info.get("audio_codec") or "none")
+        if src:
+            try:
+                put(L, "File size", f"{src.stat().st_size / 2**20:.1f} MB")
+                put(L, "Extension", src.suffix.lower() or "none")
+            except OSError:
+                pass
+    if settings:
+        L += [rule, "SETTINGS"]
+        for k, v in asdict(settings).items():
+            put(L, k, v)
+    if cmd:
+        L += [rule, "COMMAND"]
+        L += textwrap.wrap(clean(" ".join(cmd)), W,
+                           break_long_words=False, break_on_hyphens=False)
+    L += [rule, "HINTS"]
+    for h in _hints(code, tail, info, settings):
+        L += textwrap.wrap(h, W - 2, initial_indent="- ",
+                           subsequent_indent="  ")
+    if tail.strip():
+        L += [rule, "FFMPEG OUTPUT (last lines)"]
+        for ln in clean(tail).splitlines()[-25:]:
+            L += textwrap.wrap(ln, W, break_long_words=True) or [""]
+    if exc is not None:
+        L += [rule, "TRACEBACK"]
+        tb = clean("".join(traceback.format_exception(
+            type(exc), exc, exc.__traceback__)))
+        for ln in tb.splitlines():
+            L += textwrap.wrap(ln, W, break_long_words=True,
+                               replace_whitespace=False) or [""]
+    L += [rule, "Nothing here was sent anywhere. File names removed.", ""]
+    text = "\n".join(L)
+
+    for folder in (Path.cwd(), Path(tempfile.gettempdir())):
+        target = folder / "CRASHREPORT.txt"
+        try:
+            target.write_text(text, encoding="utf-8")
+            return target
+        except OSError:
+            continue
+    return None
+
+
+def _announce(path: Path | None) -> None:
+    if path:
+        print(f"Crash report saved: {path}", file=sys.stderr)
+        print("Send that file to the developer.", file=sys.stderr)
+    else:
+        print("Could not write CRASHREPORT.txt.", file=sys.stderr)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -251,6 +433,18 @@ def settings_from_args(args: argparse.Namespace) -> Settings:
 
 
 def main(argv: list[str] | None = None) -> int:
+    try:
+        return _main(argv)
+    except KeyboardInterrupt:
+        print("\nCancelled.", file=sys.stderr)
+        return 130
+    except Exception as exc:  # last resort: never show a bare traceback
+        print(f"Unexpected error: {exc}", file=sys.stderr)
+        _announce(write_crash_report("unexpected error", str(exc), exc=exc))
+        return 1
+
+
+def _main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
 
     if args.list_presets:
@@ -279,14 +473,27 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             continue
         dst = args.output or src.with_name(f"{src.stem}_enhanced.mp4")
-        info = probe(src)
+        try:
+            info = probe(src)
+        except ProbeError as exc:
+            print(f"{src.name}: {exc}", file=sys.stderr)
+            _announce(write_crash_report(
+                "probe failed", str(exc), src=src, dst=dst,
+                settings=settings, tail=exc.detail))
+            failures += 1
+            continue
         cmd = build_command(src, dst, settings, info, args.codec,
                             args.x264_preset)
         print(f"{src.name} ({info['width']}x{info['height']}) -> {dst.name}")
         if args.dry_run:
             print(" ".join(cmd))
             continue
-        if run_with_progress(cmd, info["duration"]) != 0:
+        code, tail = run_with_progress(cmd, info["duration"])
+        if code != 0:
+            _announce(write_crash_report(
+                "ffmpeg failed", f"ffmpeg exited with code {code}",
+                cmd=cmd, src=src, dst=dst, info=info, settings=settings,
+                code=code, tail=tail))
             failures += 1
 
     return 1 if failures else 0
