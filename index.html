@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clearcut</title>
-<meta name="description" content="Sharpen, clean up and colour-grade video in your browser. Nothing is uploaded.">
+<meta name="description" content="Sharpen, clean up and colour-grade video and photos in your browser. Nothing is uploaded.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230e0d0c%22/%3E%3Cpath d=%22M22 22H70L22 70Z%22 fill=%22none%22 stroke=%22%23ff6a1a%22 stroke-width=%226%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M78 30V78H30Z%22 fill=%22%23ff6a1a%22 stroke=%22%23ff6a1a%22 stroke-width=%226%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
 <meta name="theme-color" content="#0a0b0d">
@@ -71,7 +71,8 @@ input[type=file]{display:none}
 #stage{display:none}
 .player{position:relative;background:#000;border-radius:20px;overflow:hidden;
   border:1px solid var(--line)}
-.player video{display:block;width:100%;max-height:60vh;background:#000}
+.player video,.player img{display:block;width:100%;max-height:60vh;background:#000;object-fit:contain}
+[hidden]{display:none!important}
 .fx{position:absolute;inset:0;pointer-events:none}
 #warmFx{mix-blend-mode:soft-light;opacity:0}
 #grainFx{mix-blend-mode:overlay;opacity:0;background-size:256px 256px;
@@ -80,7 +81,7 @@ input[type=file]{display:none}
   0%{background-position:0 0}25%{background-position:-64px 40px}
   50%{background-position:30px -80px}75%{background-position:-40px -20px}
   100%{background-position:0 0}}
-.player.orig video{filter:none!important}
+.player.orig video,.player.orig img{filter:none!important}
 .player.orig .fx{display:none}
 .bar{display:flex;flex-direction:column;align-items:center;gap:14px;margin:16px 0 0}
 .meta{color:var(--muted);font-size:12px;text-align:center;word-break:break-word}
@@ -119,8 +120,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   white-space:pre-line;word-break:break-word}
 #status.err{color:#ff8a6a}
 #result{display:none;margin-top:28px}
-#result video{display:block;width:100%;border-radius:20px;border:1px solid var(--line);
-  background:#000;max-height:60vh}
+#result video,#result img{display:block;width:100%;border-radius:20px;border:1px solid var(--line);
+  background:#000;max-height:60vh;object-fit:contain}
 #dl{margin-top:14px}
 
 /* diagnostics */
@@ -152,7 +153,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
     <button type="button" data-lang="en" class="on">EN</button>
     <button type="button" data-lang="ru">RU</button>
   </div>
-  <div class="kicker" data-i18n="kicker">Video enhancer</div>
+  <div class="kicker" data-i18n="kicker">Video and image enhancer</div>
   <h1>Clearcut</h1>
   <p class="sub" data-i18n="sub"></p>
 </header>
@@ -169,12 +170,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 <label class="card drop" id="drop">
   <span class="name" data-i18n="dropName"></span>
   <span class="desc" data-i18n="dropDesc"></span>
-  <input type="file" id="file" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv">
+  <input type="file" id="file" accept="video/*,image/*,.mp4,.mov,.m4v,.webm,.mkv,.jpg,.jpeg,.png,.webp,.bmp,.gif,.tif,.tiff,.avif,.heic">
 </label>
 
 <div id="stage">
   <div class="player" id="player">
     <video id="vid" controls playsinline muted loop></video>
+    <img id="pic" alt="" hidden>
     <div class="fx" id="warmFx"></div>
     <div class="fx" id="grainFx"></div>
   </div>
@@ -182,7 +184,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
     <span class="meta" id="meta"></span>
     <button type="button" class="chip pre hold" id="hold" data-i18n="hold"></button>
   </div>
-  <p class="note" data-i18n="previewNote"></p>
+  <p class="note" id="previewNote" data-i18n="previewNote"></p>
 
   <div class="eyebrow" data-i18n="gPresets"></div>
   <div class="chips center" id="presets"></div>
@@ -190,12 +192,16 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   <div class="eyebrow" data-i18n="gSettings"></div>
 
   <section class="card">
-    <h3><span class="name" data-i18n="gSize"></span> <span class="desc" data-i18n="gSizeD"></span></h3>
-    <div class="row">
+    <h3><span class="name" data-i18n="gSize"></span> <span class="desc" id="gSizeDesc" data-i18n="gSizeD"></span></h3>
+    <div class="row" id="heightRow">
       <div class="lab"><span data-i18n="height"></span></div>
       <div class="chips" id="heightChips"></div>
     </div>
-    <div class="row">
+    <div class="row" id="scaleRow" hidden>
+      <div class="lab"><span data-i18n="scale"></span></div>
+      <div class="chips" id="scaleChips"></div>
+    </div>
+    <div class="row" id="fpsRow">
       <div class="lab"><span data-i18n="fps"></span></div>
       <div class="chips" id="fpsChips"></div>
     </div>
@@ -222,13 +228,18 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   </section>
 
   <section class="card">
-    <h3><span class="name" data-i18n="gOut"></span> <span class="desc" data-i18n="gOutD"></span></h3>
+    <h3><span class="name" data-i18n="gOut"></span> <span class="desc" id="gOutDesc" data-i18n="gOutD"></span></h3>
+    <div class="row" id="fmtRow" hidden>
+      <div class="lab"><span data-i18n="fmt"></span></div>
+      <div class="chips" id="fmtChips"></div>
+    </div>
     <div id="sOut"></div>
-    <div class="row">
+    <div class="row" id="speedRow">
       <div class="lab"><span data-i18n="speed"></span></div>
       <div class="chips" id="speedChips"></div>
     </div>
-    <p class="note" data-i18n="speedNote"></p>
+    <p class="note" id="speedNote" data-i18n="speedNote"></p>
+    <p class="note" id="imgNote" data-i18n="imgNote" hidden></p>
   </section>
 
   <div class="go">
@@ -241,6 +252,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 
   <div id="result">
     <video id="out" controls playsinline></video>
+    <img id="outPic" alt="" hidden>
     <a class="btn" id="dl" data-i18n="download"></a>
   </div>
 </div>
@@ -279,10 +291,10 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
 /* ---------- strings ---------- */
 const I18N = {
   en: {
-    kicker: 'Video enhancer',
-    sub: 'Sharpen, clean up and colour-grade your video. Nothing is uploaded, everything runs in your browser',
-    dropName: 'Choose a video',
-    dropDesc: '— drop it here or tap. MP4, MOV or WebM, best under about 300 MB',
+    kicker: 'Video and image enhancer',
+    sub: 'Sharpen, clean up and colour-grade your video or photo. Nothing is uploaded, everything runs in your browser',
+    dropName: 'Choose a video or image',
+    dropDesc: '— drop it here or tap. MP4, MOV, WebM, JPG, PNG or WebP, best under about 300 MB',
     hold: 'Hold to compare',
     previewNote: 'The preview shows colour, sharpening and grain. Denoise, upscale and frame rate are applied on export',
     gPresets: 'Presets', gSettings: 'Settings',
@@ -309,9 +321,16 @@ const I18N = {
     errEngine: 'Could not load the video engine. Check your connection and try again',
     errFail: 'Processing failed. Try a shorter clip, a lower upscale or a faster speed',
     errBig: 'This file is too large for the browser version. Use the Python CLI instead',
-    errNoFile: 'Choose a video first',
+    errNoFile: 'Choose a video or image first',
     onlyUp: 'Upscaling only applies when the source is smaller',
     slowInterp: 'Motion interpolation is very slow in the browser. The CLI is much faster',
+    previewNoteI: 'The preview shows colour, sharpening and grain. Denoise and upscale are applied on export',
+    gSizeDi: '— upscale', gOutDi: '— format and quality',
+    scale: 'Upscale', fmt: 'Format', fmtAuto: 'Same as source', fmtPng: 'PNG (lossless)', fmtJpg: 'JPEG',
+    qJpg: 'JPEG quality (lower is better)',
+    imgNote: 'GIF and animated WebP use the first frame. Transparency is not kept',
+    errImgBig: 'This image would be too large after upscaling. Pick a smaller upscale or use the Python CLI',
+    errImgFail: 'Processing failed. Try a lower upscale or use the Python CLI',
     gDiag: 'Diagnostics',
     diagName: 'Report',
     diagDesc: '— checks this device and saves a report you can send to the developer. It has no file names and is never sent automatically',
@@ -327,10 +346,10 @@ const I18N = {
     noWasm: 'This browser cannot run the video engine (WebAssembly or workers are missing). Use another browser or the CLI'
   },
   ru: {
-    kicker: 'Улучшение видео',
-    sub: 'Резкость, чистка и цвет для видео. Ничего не загружается, всё работает в браузере',
-    dropName: 'Выбери видео',
-    dropDesc: '— перетащи сюда или нажми. MP4, MOV или WebM, лучше до 300 МБ',
+    kicker: 'Улучшение видео и фото',
+    sub: 'Резкость, чистка и цвет для видео и фото. Ничего не загружается, всё работает в браузере',
+    dropName: 'Выбери видео или фото',
+    dropDesc: '— перетащи сюда или нажми. MP4, MOV, WebM, JPG, PNG или WebP, лучше до 300 МБ',
     hold: 'Удерживай для сравнения',
     previewNote: 'В превью видны цвет, резкость и зерно. Шумоподавление, апскейл и частота кадров применяются при экспорте',
     gPresets: 'Пресеты', gSettings: 'Настройки',
@@ -357,9 +376,16 @@ const I18N = {
     errEngine: 'Не удалось загрузить видеодвижок. Проверь интернет и попробуй ещё раз',
     errFail: 'Не получилось обработать. Попробуй клип покороче, апскейл поменьше или скорость побыстрее',
     errBig: 'Файл слишком большой для браузерной версии. Используй Python CLI',
-    errNoFile: 'Сначала выбери видео',
+    errNoFile: 'Сначала выбери видео или фото',
     onlyUp: 'Апскейл работает только если исходник меньше',
     slowInterp: 'Интерполяция по движению в браузере очень медленная. В CLI намного быстрее',
+    previewNoteI: 'В превью видны цвет, резкость и зерно. Шумоподавление и апскейл применяются при экспорте',
+    gSizeDi: '— апскейл', gOutDi: '— формат и качество',
+    scale: 'Апскейл', fmt: 'Формат', fmtAuto: 'Как у исходника', fmtPng: 'PNG (без потерь)', fmtJpg: 'JPEG',
+    qJpg: 'Качество JPEG (меньше = лучше)',
+    imgNote: 'Из GIF и анимированного WebP берётся первый кадр. Прозрачность не сохраняется',
+    errImgBig: 'После апскейла фото получится слишком большим. Выбери апскейл поменьше или используй Python CLI',
+    errImgFail: 'Не получилось обработать. Попробуй апскейл поменьше или используй Python CLI',
     gDiag: 'Диагностика',
     diagName: 'Отчёт',
     diagDesc: '— проверяет устройство и сохраняет отчёт, который можно отправить разработчику. Имён файлов в нём нет, сам он никуда не уходит',
@@ -381,7 +407,7 @@ const t = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
 
 /* ---------- settings (mirrors clearcut.py) ---------- */
 const DEFAULTS = {
-  height: 0, denoise: 0, deflicker: false, deband: false, fps: 0,
+  height: 0, scale: 0, denoise: 0, deflicker: false, deband: false, fps: 0,
   interp: 'blend', sharpen: 0, contrast: 0, brightness: 0, saturation: 0,
   vibrance: 0, warmth: 0, grain: 0, crf: 18
 };
@@ -403,6 +429,9 @@ const SLIDERS = {
   sOut:    [['crf', 14, 28, 1]]
 };
 const HEIGHTS = [0, 1080, 1440, 2160];
+const SCALES = [0, 2, 3, 4];             // images only
+const MAX_IMAGE_MP = 80;                 // output megapixels the browser will attempt
+const IMG_FORMATS = ['auto', 'png', 'jpg'];
 const FPS = [0, 24, 30, 48, 60];
 // Browser memory is tight, so "Best" is x264 "fast" with a short look-ahead,
 // not "medium" (which ran the tab out of memory).
@@ -411,16 +440,29 @@ const SPEED_PARAMS = { fast: 'rc-lookahead=10:ref=2:bframes=2' };
 
 const S = Object.assign({}, DEFAULTS);
 let speed = 'veryfast';
-const state = { file: null, srcW: 0, srcH: 0, url: null, running: false };
+const state = { file: null, kind: 'video', srcW: 0, srcH: 0, url: null, running: false };
+let imgFmt = 'auto';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const IMAGE_EXT = /\.(jpe?g|png|webp|bmp|gif|tiff?|avif|heic|heif)$/i;
+const isImageFile = f => (f.type || '').startsWith('image/') || IMAGE_EXT.test(f.name || '');
+const isImage = () => state.kind === 'image';
+// The format the image will be saved as. "Same as source" keeps JPEG as JPEG and uses PNG otherwise.
+function outFormat() {
+  if (imgFmt !== 'auto') return imgFmt;
+  const f = state.file;
+  const jpeg = f && (f.type === 'image/jpeg' || /\.jpe?g$/i.test(f.name || ''));
+  return jpeg ? 'jpg' : 'png';
+}
+// JPEG quality: the shared "lower is better" slider (14..28) mapped to ffmpeg's -q:v (2..8).
+const jpegQ = crf => clamp(Math.round(2 + (crf - 14) / 14 * 6), 2, 8);
 
 /* ---------- diagnostics: black box, self-check, crash report ---------- */
 // The black box saves the state of a run to localStorage every second. If the
 // tab dies (usually out of memory) nothing else can run, but the last saved
 // state is still there on the next load and becomes CRASHREPORT.txt.
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const KEY_NOW = 'clearcut-diag-now';
 const KEY_CRASH = 'clearcut-diag-crash';
 const STALL_SECONDS = 90;
@@ -533,6 +575,19 @@ function estimateMemory() {
   if (!state.file) return null;
   const fileMB = state.file.size / 1048576;
   const known = state.srcW > 0 && state.srcH > 0;
+  if (isImage()) {
+    const mp = known ? state.srcW * state.srcH / 1e6 : 12;
+    const up = S.scale > 1 ? S.scale : 1;
+    const outMP = mp * up * up;
+    const wasmMB = mp * 8 + outMP * 9 + fileMB * 2 + 60;     // decode + filter buffers + output + engine
+    const jsMB = mp * 4 + fileMB * 2 + outMP * 1.5;          // canvas, PNG copy, read-back copy
+    const totalMB = wasmMB + jsMB;
+    const limit = isMobile() ? 600 : 1800;
+    const r = Math.round;
+    return { fileMB: r(fileMB), outMB: r(outMP * 1.5), frameMB: r(outMP * 30) / 10, frames: 3,
+             wasmMB: r(wasmMB), jsMB: r(jsMB), totalMB: r(totalMB), limit, warn: totalMB > limit,
+             megapixels: r(outMP * 10) / 10 };
+  }
   const up = known && S.height > state.srcH ? S.height / state.srcH : 1;
   const frameMB = known ? state.srcW * up * state.srcH * up * 1.5 / 1048576 : 6;
   const held = { ultrafast: 6, veryfast: 14, fast: 20 }[speed] || 14;
@@ -717,7 +772,11 @@ function sessionText(d, title, withDevice = true) {
     const f = r.file || {};
     L.push('', 'FILE (name is not recorded)');
     L.push(kv('Type', `${f.ext} ${f.type}`), kv('Size', `${f.mb} MB`));
-    L.push(kv('Video', `${f.w}x${f.h}, ${f.sec === null ? '?' : f.sec + ' s'}`));
+    if (f.kind === 'image') {
+      L.push(kv('Image', `${f.w}x${f.h}, saved as ${r.out}, input via ${r.via || '?'}`));
+    } else {
+      L.push(kv('Video', `${f.w}x${f.h}, ${f.sec === null ? '?' : f.sec + ' s'}`));
+    }
     L.push('', 'SETTINGS (changed ones)');
     const changed = Object.entries(r.settings || {}).filter(([k, v]) => v !== DEFAULTS[k]);
     L.push(chunk(changed.map(([k, v]) => `${k}=${v}`).join(' ') || '(defaults)'));
@@ -812,20 +871,22 @@ function clearCrash() { lsDel(KEY_CRASH); crashed = null; showCrash(); }
 
 
 /* ---------- filter chain (same order and maths as clearcut.py) ---------- */
-function buildFilters(s, srcH) {
+function buildFilters(s, srcH, kind = 'video', fmt = 'png') {
+  const img = kind === 'image';
   const c = [];
-  if (s.deflicker) c.push('deflicker=size=5:mode=am');
+  if (s.deflicker && !img) c.push('deflicker=size=5:mode=am');
   if (s.denoise > 0) {
     const d = clamp(s.denoise, 0, 10);
     c.push(`hqdn3d=${d.toFixed(2)}:${(d * 0.75).toFixed(2)}:${(d * 1.5).toFixed(2)}:${(d * 1.1).toFixed(2)}`);
   }
   if (s.deband) c.push('deband=1thr=0.02:2thr=0.02:3thr=0.02:blur=1');
-  if (s.fps > 0) {
+  if (s.fps > 0 && !img) {
     c.push(s.interp === 'motion'
       ? `minterpolate=fps=${s.fps}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1`
       : `minterpolate=fps=${s.fps}:mi_mode=blend`);
   }
-  if (s.height && srcH && s.height > srcH) c.push(`scale=-2:${s.height}:flags=lanczos`);
+  if (img) { if (s.scale > 1) c.push(`scale=iw*${s.scale}:ih*${s.scale}:flags=lanczos`); }
+  else if (s.height && srcH && s.height > srcH) c.push(`scale=-2:${s.height}:flags=lanczos`);
   // The browser could not read the size (some codecs): let ffmpeg decide, still never scaling down.
   else if (s.height && !srcH) c.push(`scale=-2:max(ih\\,${s.height}):flags=lanczos`);
   if (s.sharpen > 0) c.push(`unsharp=5:5:${clamp(s.sharpen, 0, 2).toFixed(2)}:5:5:0`);
@@ -841,7 +902,7 @@ function buildFilters(s, srcH) {
     c.push(`colorbalance=rs=${f(a)}:rm=${f(a)}:rh=${f(a)}:bs=${f(-a)}:bm=${f(-a)}:bh=${f(-a)}`);
   }
   if (s.grain > 0) c.push(`noise=alls=${Math.round(clamp(s.grain, 0, 40))}:allf=t`);
-  c.push('format=yuv420p');
+  c.push(img ? (fmt === 'jpg' ? 'format=yuvj420p' : 'format=rgb24') : 'format=yuv420p');
   return c;
 }
 
@@ -871,7 +932,9 @@ function applyPreview() {
   parts.push(`contrast(${1 + S.contrast / 200})`);
   parts.push(`brightness(${1 + S.brightness / 250})`);
   parts.push(`saturate(${Math.max(0, 1 + S.saturation / 100 + S.vibrance / 300)})`);
-  $('vid').style.filter = parts.join(' ');
+  const flt = parts.join(' ');
+  $('vid').style.filter = flt;
+  $('pic').style.filter = flt;
 
   const warm = $('warmFx');
   warm.style.background = S.warmth >= 0 ? 'rgb(255,140,40)' : 'rgb(60,130,255)';
@@ -896,6 +959,12 @@ function renderChips() {
   chipRow($('heightChips'), HEIGHTS.map(v => ({ value: v })),
     () => S.height, v => { S.height = v; },
     it => it.value ? `${it.value}p` : t('keep'));
+  chipRow($('scaleChips'), SCALES.map(v => ({ value: v })),
+    () => S.scale, v => { S.scale = v; },
+    it => it.value ? `×${it.value}` : t('keep'));
+  chipRow($('fmtChips'), IMG_FORMATS.map(v => ({ value: v })),
+    () => imgFmt, v => { imgFmt = v; applyKind(); },
+    it => t({ auto: 'fmtAuto', png: 'fmtPng', jpg: 'fmtJpg' }[it.value]));
   chipRow($('fpsChips'), FPS.map(v => ({ value: v })),
     () => S.fps, v => { S.fps = v; updateInterp(); },
     it => it.value ? `${it.value} fps` : t('keep'));
@@ -908,6 +977,7 @@ function renderChips() {
   const host = $('presets');
   host.textContent = '';
   Object.keys(PRESETS).forEach(k => {
+    if (isImage() && k === 'p_smooth') return;   // frame-rate preset, meaningless for a still
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip pre';
@@ -922,7 +992,7 @@ function renderChips() {
 }
 
 function updateInterp() {
-  $('interpRow').style.display = S.fps ? '' : 'none';
+  $('interpRow').hidden = isImage() || !S.fps;
 }
 
 const sliderEls = {};
@@ -948,7 +1018,7 @@ function buildSliders() {
       show();
       row.append(lab, inp);
       host.appendChild(row);
-      sliderEls[key] = { inp, show };
+      sliderEls[key] = { inp, show, row, name };
     });
   });
   const tg = $('tClean');
@@ -975,14 +1045,38 @@ function syncControls() {
 }
 
 /* ---------- language ---------- */
+function translateAll() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+}
+
+// Show the controls that make sense for the chosen file: images have no frame
+// rate, flicker or encode speed, but they do have a format.
+function applyKind() {
+  const img = isImage();
+  const show = (id, on) => { $(id).hidden = !on; };
+  show('heightRow', !img); show('scaleRow', img);
+  show('fpsRow', !img); show('speedRow', !img); show('speedNote', !img);
+  show('fmtRow', img); show('imgNote', img);
+  $('interpRow').hidden = img || !S.fps;
+  const jpg = img && outFormat() === 'jpg';
+  sliderEls.crf.row.hidden = img && !jpg;
+  sliderEls.crf.name.dataset.i18n = img ? 'qJpg' : 'crf';
+  const df = document.querySelector('#tClean [data-i18n="deflicker"]');
+  if (df) df.hidden = img;
+  $('gSizeDesc').dataset.i18n = img ? 'gSizeDi' : 'gSizeD';
+  $('gOutDesc').dataset.i18n = img ? 'gOutDi' : 'gOutD';
+  $('previewNote').dataset.i18n = img ? 'previewNoteI' : 'previewNote';
+  translateAll();
+}
+
 function setLang(l) {
   lang = l;
   document.documentElement.lang = l;
   document.querySelectorAll('[data-lang]').forEach(b =>
     b.classList.toggle('on', b.dataset.lang === l));
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.dataset.i18n);
-  });
+  applyKind();
   showCrash();
   renderChips();
   try { localStorage.setItem('clearcut-lang', l); } catch (e) { /* ignore */ }
@@ -999,24 +1093,43 @@ function loadFile(f) {
   if (!f) return;
   if (f.size > 700 * 1024 * 1024) { setStatus(t('errBig'), true); return; }
   state.file = f;
+  state.kind = isImageFile(f) ? 'image' : 'video';
+  state.srcW = state.srcH = 0;
   if (state.url) URL.revokeObjectURL(state.url);
   state.url = URL.createObjectURL(f);
-  const v = $('vid');
-  v.src = state.url;
-  v.onloadedmetadata = () => {
-    state.srcW = v.videoWidth; state.srcH = v.videoHeight;
-    $('meta').textContent =
-      `${f.name} · ${v.videoWidth}×${v.videoHeight} · ${fmtTime(v.duration)} · ${(f.size / 1048576).toFixed(1)} MB`;
-  };
-  v.onerror = () => {
-    state.srcW = state.srcH = 0;
-    $('meta').textContent = f.name;
-  };
+  const v = $('vid'), pic = $('pic');
+  const mb = (f.size / 1048576).toFixed(1);
+  if (isImage()) {
+    v.pause(); v.removeAttribute('src'); v.load();
+    v.hidden = true; pic.hidden = false;
+    $('hold').hidden = false;
+    pic.onload = () => {
+      // naturalWidth/Height already follow the photo's rotation, as the preview does
+      state.srcW = pic.naturalWidth; state.srcH = pic.naturalHeight;
+      $('meta').textContent = `${f.name} · ${pic.naturalWidth}×${pic.naturalHeight} · ${mb} MB`;
+    };
+    pic.onerror = () => { $('meta').textContent = f.name; };
+    pic.src = state.url;
+  } else {
+    pic.hidden = true; pic.removeAttribute('src'); v.hidden = false;
+    v.src = state.url;
+    v.onloadedmetadata = () => {
+      state.srcW = v.videoWidth; state.srcH = v.videoHeight;
+      $('meta').textContent =
+        `${f.name} · ${v.videoWidth}×${v.videoHeight} · ${fmtTime(v.duration)} · ${mb} MB`;
+    };
+    v.onerror = () => {
+      state.srcW = state.srcH = 0;
+      $('meta').textContent = f.name;
+    };
+  }
+  applyKind();
+  renderChips();
   $('stage').style.display = 'block';
   $('result').style.display = 'none';
   setStatus('');
   applyPreview();
-  v.play().catch(() => {});
+  if (!isImage()) v.play().catch(() => {});
 }
 
 function setStatus(msg, err) {
@@ -1142,9 +1255,17 @@ async function run() {
   $('bar').style.width = '0';
   setStatus(t('loadEngine'));
 
+  const img = isImage();
+  const fmt = outFormat();
+  if (img && state.srcW && state.srcH * state.srcW * Math.pow(Math.max(S.scale, 1), 2) > MAX_IMAGE_MP * 1e6) {
+    setStatus(t('errImgBig'), true);
+    state.running = false; $('run').disabled = false; $('cancel').style.display = 'none';
+    $('prog').style.display = 'none';
+    return;
+  }
   const notes = [];
-  if (S.height && state.srcH && S.height <= state.srcH) notes.push(t('onlyUp'));
-  if (S.fps && S.interp === 'motion') notes.push(t('slowInterp'));
+  if (!img && S.height && state.srcH && S.height <= state.srcH) notes.push(t('onlyUp'));
+  if (!img && S.fps && S.interp === 'motion') notes.push(t('slowInterp'));
   if (pre.est && pre.est.warn) notes.push(t('heavy').replace('{mb}', pre.est.totalMB));
 
   const f = state.file, v = $('vid');
@@ -1152,9 +1273,10 @@ async function run() {
   sess.run = {
     t0: Date.now(),
     file: { ext, mb: Math.round(f.size / 104857.6) / 10, type: f.type || '?',
-            w: state.srcW, h: state.srcH,
-            sec: isFinite(v.duration) ? Math.round(v.duration * 10) / 10 : null },
-    settings: Object.assign({}, S), speed, est: pre.est, vf: null, args: null
+            kind: state.kind, w: state.srcW, h: state.srcH,
+            sec: img ? null : (isFinite(v.duration) ? Math.round(v.duration * 10) / 10 : null) },
+    settings: Object.assign({}, S), speed: img ? '-' : speed, est: pre.est, vf: null, args: null,
+    out: img ? fmt : 'mp4', via: null
   };
   sess.ff = []; sess.mem = []; sess.progress = 0;
   blackboxOn('engine-load');
@@ -1171,6 +1293,7 @@ async function run() {
 
     setStatus([t('working')].concat(notes).join('  '));
     stage('write-input');
+    if (img) { await runImage(eng, f, fmt); ok = true; return; }
     const inName = 'input' + ext;
     await eng.writeFile(inName, new Uint8Array(await f.arrayBuffer()));
 
@@ -1205,6 +1328,7 @@ async function run() {
     if (out.dataset.url) URL.revokeObjectURL(out.dataset.url);
     out.dataset.url = url;
     out.src = url;
+    out.hidden = false; $('outPic').hidden = true;
     const dl = $('dl');
     dl.href = url;
     dl.download = f.name.replace(/\.[^.]+$/, '') + '_enhanced.mp4';
@@ -1217,7 +1341,7 @@ async function run() {
   } catch (e) {
     if (state.running) {
       fail('run', e);
-      setStatus(t('errFail') + '\n' + t('reportHint'), true);
+      setStatus(t(isImage() ? 'errImgFail' : 'errFail') + '\n' + t('reportHint'), true);
       // A crashed engine cannot be reused: drop it so the next try starts clean.
       if (ffmpeg) { try { ffmpeg.terminate(); } catch (e2) { /* ignore */ } ffmpeg = null; }
     }
@@ -1228,6 +1352,71 @@ async function run() {
     $('cancel').style.display = 'none';
     if (!ok) $('prog').style.display = 'none';
   }
+}
+
+// Hand the browser-decoded picture to ffmpeg as a lossless PNG. The browser has
+// already applied the photo's rotation and can read formats ffmpeg.wasm cannot
+// (HEIC on Safari, AVIF). Very large pictures exceed the canvas limit, and then
+// the original file goes straight to ffmpeg.
+async function prepareImage(f) {
+  const pic = $('pic');
+  const w = pic.naturalWidth, h = pic.naturalHeight;
+  if (w && h && w * h <= 16000000) {
+    try {
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(pic, 0, 0);
+      const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+      cv.width = cv.height = 0;
+      if (blob && blob.size > 100) {
+        return { name: 'input.png', bytes: new Uint8Array(await blob.arrayBuffer()), via: 'canvas' };
+      }
+    } catch (e) { note('canvas-failed', { msg: String(e && e.message || e).slice(0, 80) }); }
+  }
+  const ext = (f.name.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0].toLowerCase();
+  return { name: 'input' + ext, bytes: new Uint8Array(await f.arrayBuffer()), via: 'raw' };
+}
+
+async function runImage(eng, f, fmt) {
+  const prep = await prepareImage(f);
+  sess.run.via = prep.via;
+  note('input-ready', { via: prep.via, kb: Math.round(prep.bytes.length / 1024) });
+  await eng.writeFile(prep.name, prep.bytes);
+  prep.bytes = null;
+
+  const vf = buildFilters(S, state.srcH, 'image', fmt).join(',');
+  const outName = fmt === 'jpg' ? 'out.jpg' : 'out.png';
+  const args = ['-i', prep.name, '-vf', vf, '-frames:v', '1', '-update', '1'];
+  if (fmt === 'jpg') args.push('-c:v', 'mjpeg', '-q:v', String(jpegQ(S.crf)));
+  else args.push('-c:v', 'png');
+  args.push(outName);
+  sess.run.vf = vf;
+  sess.run.args = args.join(' ');
+
+  stage('encode');
+  lastActivity = Date.now();
+  tail = [];
+  const code = await eng.exec(args);
+  note('exec', { code });
+  if (code !== 0) throw new Error('ffmpeg exit ' + code);
+
+  stage('read-output');
+  const data = await eng.readFile(outName);
+  const blob = new Blob([data.buffer], { type: fmt === 'jpg' ? 'image/jpeg' : 'image/png' });
+  const url = URL.createObjectURL(blob);
+  const out = $('outPic');
+  if (out.dataset.url) URL.revokeObjectURL(out.dataset.url);
+  out.dataset.url = url;
+  out.src = url;
+  out.hidden = false; $('out').hidden = true;
+  const dl = $('dl');
+  dl.href = url;
+  dl.download = f.name.replace(/\.[^.]+$/, '') + '_enhanced.' + fmt;
+  $('result').style.display = 'block';
+  $('bar').style.width = '100%';
+  setStatus(t('done'));
+  try { await eng.deleteFile(prep.name); await eng.deleteFile(outName); } catch (e) { /* ignore */ }
+  $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function cancel() {
@@ -1243,7 +1432,8 @@ function resetAll() {
   if (state.running) cancel();
   Object.assign(S, DEFAULTS);
   speed = 'veryfast';
-  syncControls(); renderChips(); applyPreview();
+  imgFmt = 'auto';
+  syncControls(); applyKind(); renderChips(); applyPreview();
   setStatus('');
   $('prog').style.display = 'none';
   $('bar').style.width = '0';
@@ -1251,6 +1441,9 @@ function resetAll() {
   if (out.dataset.url) { URL.revokeObjectURL(out.dataset.url); delete out.dataset.url; }
   out.removeAttribute('src');
   out.load();
+  const op = $('outPic');
+  if (op.dataset.url) { URL.revokeObjectURL(op.dataset.url); delete op.dataset.url; }
+  op.removeAttribute('src');
   $('result').style.display = 'none';
   $('run').disabled = false;
 }

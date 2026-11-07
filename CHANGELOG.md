@@ -2,6 +2,17 @@
 
 All notable changes to this project are recorded here.
 
+## 1.2.0 - 2026-11-07
+
+### Added
+- Photos and other pictures (JPG, PNG, WebP, BMP, TIFF, AVIF) in both the browser app and the CLI, using the same filter chain without the time-based filters.
+- Upscale by ×2, ×3 or ×4 for pictures, and a choice of PNG or JPEG output.
+- CLI option `--format` and automatic picture detection from the file extension.
+- Picture details in the crash report.
+
+### Changed
+- The browser hands pictures to the encoder as a lossless PNG, so the photo's rotation and formats such as HEIC on Safari work.
+
 ## 1.1.0 - 2026-10-09
 
 ### Added

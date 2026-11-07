@@ -3,10 +3,13 @@
 
 One pass does: deflicker, denoise, deband, frame interpolation, upscale,
 sharpen, colour grade and film grain. The filter chain here is mirrored
-by the browser version (index.html), so both give the same look.
+by the browser version (index.html), so both give the same look. Pictures
+(JPG, PNG, WebP and so on) go through the same chain, minus the filters
+that only make sense over time.
 
 Usage:
     python clearcut.py clip.mp4
+    python clearcut.py photo.jpg --scale 2 --sharpen 0.8
     python clearcut.py clip.mp4 --preset ai-clean --height 1080
     python clearcut.py a.mp4 b.mp4 --sharpen 0.8 --fps 60 --interp motion
 
@@ -30,7 +33,15 @@ import traceback
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
+
+
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif",
+              ".tif", ".tiff", ".avif"}
+
+
+def is_image(path: Path) -> bool:
+    return path.suffix.lower() in IMAGE_EXTS
 
 
 @dataclass
@@ -78,11 +89,16 @@ def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
-def build_filters(s: Settings, src_height: int) -> list[str]:
-    """Return the ffmpeg video filters in processing order."""
+def build_filters(s: Settings, src_height: int, image: bool = False,
+                  fmt: str = "png") -> list[str]:
+    """Return the ffmpeg video filters in processing order.
+
+    For a picture the time-based filters (deflicker, frame rate) are left
+    out, and the chain ends in the colour format the file type needs.
+    """
     chain: list[str] = []
 
-    if s.deflicker:
+    if s.deflicker and not image:
         chain.append("deflicker=size=5:mode=am")
 
     if s.denoise > 0:
@@ -95,7 +111,7 @@ def build_filters(s: Settings, src_height: int) -> list[str]:
     if s.deband:
         chain.append("deband=1thr=0.02:2thr=0.02:3thr=0.02:blur=1")
 
-    if s.fps > 0:
+    if s.fps > 0 and not image:
         if s.interp == "motion":
             chain.append(
                 f"minterpolate=fps={s.fps:g}:mi_mode=mci:mc_mode=aobmc"
@@ -105,11 +121,19 @@ def build_filters(s: Settings, src_height: int) -> list[str]:
             chain.append(f"minterpolate=fps={s.fps:g}:mi_mode=blend")
 
     # Only ever scale up. Scaling down would throw detail away.
-    target = s.height
-    if not target and s.scale > 1:
-        target = int(round(src_height * s.scale / 2) * 2)
-    if target and target > src_height:
-        chain.append(f"scale=-2:{target}:flags=lanczos")
+    if image and not s.height and s.scale > 1:
+        # Exact multiple of both sides, so the picture keeps its proportions.
+        chain.append(f"scale=iw*{s.scale:g}:ih*{s.scale:g}:flags=lanczos")
+    else:
+        target = s.height
+        if not target and s.scale > 1:
+            target = int(round(src_height * s.scale / 2) * 2)
+        if image and target:
+            # A photo's stored size can differ from how it is shown (EXIF
+            # rotation), so let ffmpeg compare with the real height.
+            chain.append(f"scale=-1:max(ih\\,{target}):flags=lanczos")
+        elif target and target > src_height:
+            chain.append(f"scale=-2:{target}:flags=lanczos")
 
     if s.sharpen > 0:
         amount = clamp(s.sharpen, 0, 2)
@@ -138,7 +162,10 @@ def build_filters(s: Settings, src_height: int) -> list[str]:
     if s.grain > 0:
         chain.append(f"noise=alls={clamp(s.grain, 0, 40):.0f}:allf=t")
 
-    chain.append("format=yuv420p")
+    if image:
+        chain.append("format=yuvj420p" if fmt == "jpg" else "format=rgb24")
+    else:
+        chain.append("format=yuv420p")
     return chain
 
 
@@ -175,6 +202,35 @@ def probe(path: Path) -> dict:
         "duration": float(data["format"].get("duration", 0) or 0),
         "audio_codec": audio["codec_name"] if audio else None,
     }
+
+
+def jpeg_quality(crf: int) -> int:
+    """Map the shared 14..28 quality slider to ffmpeg's JPEG -q:v (2..8)."""
+    return int(clamp(round(2 + (crf - 14) / 14 * 6), 2, 8))
+
+
+def image_format(args_format: str, src: Path, dst: Path | None) -> str:
+    """Pick png or jpg: the option, then the -o extension, then the source."""
+    if args_format != "auto":
+        return args_format
+    if dst is not None and dst.suffix.lower() in (".jpg", ".jpeg"):
+        return "jpg"
+    if dst is not None and dst.suffix.lower() == ".png":
+        return "png"
+    return "jpg" if src.suffix.lower() in (".jpg", ".jpeg") else "png"
+
+
+def build_image_command(src: Path, dst: Path, s: Settings, info: dict,
+                        fmt: str) -> list[str]:
+    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", str(src)]
+    cmd += ["-vf", ",".join(build_filters(s, info["height"], True, fmt))]
+    cmd += ["-frames:v", "1", "-update", "1"]
+    if fmt == "jpg":
+        cmd += ["-c:v", "mjpeg", "-q:v", str(jpeg_quality(s.crf))]
+    else:
+        cmd += ["-c:v", "png"]
+    cmd += [str(dst)]
+    return cmd
 
 
 def build_command(src: Path, dst: Path, s: Settings, info: dict,
@@ -327,9 +383,11 @@ def write_crash_report(kind: str, message: str, *, cmd: list[str] | None = None,
     put(L, "ffprobe", _tool_version("ffprobe"))
     if info:
         L += [rule, "INPUT"]
+        put(L, "Kind", "picture" if info.get("image") else "video")
         put(L, "Size", f"{info.get('width')}x{info.get('height')}")
-        put(L, "Duration", f"{info.get('duration', 0):.1f} s")
-        put(L, "Audio", info.get("audio_codec") or "none")
+        if not info.get("image"):
+            put(L, "Duration", f"{info.get('duration', 0):.1f} s")
+            put(L, "Audio", info.get("audio_codec") or "none")
         if src:
             try:
                 put(L, "File size", f"{src.stat().st_size / 2**20:.1f} MB")
@@ -417,6 +475,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     g.add_argument("--codec", choices=["h264", "h265"], default="h264")
     g.add_argument("--x264-preset", default="medium",
                    help="encoder speed preset (default: medium)")
+    g.add_argument("--format", choices=["auto", "png", "jpg"], default="auto",
+                   help="picture output format (default: same as source, "
+                        "PNG for anything but JPEG)")
     g.add_argument("--dry-run", action="store_true",
                    help="print the ffmpeg command and stop")
     return p.parse_args(argv)
@@ -474,7 +535,13 @@ def _main(argv: list[str] | None = None) -> int:
             print(f"{src}: not found", file=sys.stderr)
             failures += 1
             continue
-        dst = args.output or src.with_name(f"{src.stem}_enhanced.mp4")
+        image = is_image(src)
+        if image:
+            fmt = image_format(args.format, src, args.output)
+            dst = args.output or src.with_name(f"{src.stem}_enhanced.{fmt}")
+        else:
+            fmt = ""
+            dst = args.output or src.with_name(f"{src.stem}_enhanced.mp4")
         try:
             info = probe(src)
         except ProbeError as exc:
@@ -484,8 +551,15 @@ def _main(argv: list[str] | None = None) -> int:
                 settings=settings, tail=exc.detail))
             failures += 1
             continue
-        cmd = build_command(src, dst, settings, info, args.codec,
-                            args.x264_preset)
+        info["image"] = image
+        if image:
+            if settings.fps or settings.deflicker:
+                print(f"{src.name}: frame rate and deflicker are ignored "
+                      "for pictures", file=sys.stderr)
+            cmd = build_image_command(src, dst, settings, info, fmt)
+        else:
+            cmd = build_command(src, dst, settings, info, args.codec,
+                                args.x264_preset)
         print(f"{src.name} ({info['width']}x{info['height']}) -> {dst.name}")
         if args.dry_run:
             print(" ".join(cmd))

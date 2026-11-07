@@ -1,6 +1,6 @@
 # Clearcut
 
-Sharpen, clean up and colour-grade video in one pass. There are two ways to use it, and both share the same filter chain, so they give the same look:
+Sharpen, clean up and colour-grade video and photos in one pass. There are two ways to use it, and both share the same filter chain, so they give the same look:
 
 - **Browser app** (`index.html`): runs entirely on your device. Nothing is uploaded.
 - **Python CLI** (`clearcut.py`): a thin wrapper around ffmpeg. Faster, handles big files, and can process several clips at once.
@@ -14,19 +14,28 @@ Sharpen, clean up and colour-grade video in one pass. There are two ways to use 
 
 | Group | Controls |
 | --- | --- |
-| Size and smoothness | Upscale to 1080p, 1440p or 2160p (Lanczos, never scales down); frame-rate conversion to 24, 30, 48 or 60 fps with blend or motion interpolation |
+| Size and smoothness | Upscale to 1080p, 1440p or 2160p (Lanczos, never scales down); frame-rate conversion to 24, 30, 48 or 60 fps with blend or motion interpolation. Photos upscale by ×2, ×3 or ×4 instead |
 | Clean-up | Denoise, sharpen, deflicker, deband |
 | Colour | Contrast, brightness, saturation, vibrance, warmth |
 | Look | Film grain |
-| Output | H.264 quality (CRF) and encode speed; H.265 in the CLI |
+| Output | H.264 quality (CRF) and encode speed; H.265 in the CLI. Photos save as PNG (lossless) or JPEG |
 
 Presets: **Neutral**, **AI clean** (for soft, slightly plastic AI-generated clips), **Cinematic**, **Crisp** and **Smooth**.
 
 The filters are classic ffmpeg filters (`hqdn3d`, `unsharp`, `eq`, `minterpolate` and so on). They tighten and tidy a clip, but they do not invent new detail the way a neural upscaler does.
 
+## Photos
+
+Pictures (JPG, PNG, WebP, BMP, TIFF and, in browsers that can open them, AVIF and HEIC) go through the same chain as video. Time-based controls (frame rate, deflicker, encode speed) are hidden, and you get an upscale of ×2, ×3 or ×4 plus an output format instead.
+
+- **Same as source** keeps a JPEG as a JPEG and saves anything else as PNG. You can also force PNG or JPEG.
+- A photo's rotation is kept, so portrait shots stay upright.
+- GIF and animated WebP use the first frame, and transparency is not kept.
+- The browser stops at 80 megapixels of output. The CLI has no such limit.
+
 ## Browser version
 
-Open `index.html` (or the GitHub Pages site), choose a video, pick a preset or move the sliders, then press **Enhance**.
+Open `index.html` (or the GitHub Pages site), choose a video or photo, pick a preset or move the sliders, then press **Enhance**.
 
 - The live preview shows colour, sharpening and grain. Hold **Hold to compare** to see the original.
 - Denoise, upscale and frame rate are applied on export.
@@ -45,6 +54,8 @@ python clearcut.py in.mp4 --fps 60
 python clearcut.py in.mp4 --height 1080
 python clearcut.py in.mp4 --codec h265
 python clearcut.py in.mp4 --preset crisp
+python clearcut.py a.jpg --scale 2
+python clearcut.py a.png --format jpg
 ```
 
 The result is saved next to the original as `<name>_enhanced.mp4`, or wherever `-o` points when you give a single input. Options you pass override the preset.
@@ -63,7 +74,10 @@ The result is saved next to the original as `<name>_enhanced.mp4`, or wherever `
 | `--crf` | 14 to 28 | lower is better quality |
 | `--codec` | h264, h265 | |
 | `--x264-preset` | ultrafast to veryslow | default `medium` |
+| `--format` | auto, png, jpg | photos only; auto keeps JPEG, else PNG |
 | `--dry-run` | | prints the ffmpeg command and stops |
+
+Photos are saved next to the original as `<name>_enhanced.png` or `.jpg`. For a photo, `--crf` sets JPEG quality, `--scale 2` doubles both sides, and `--fps` and `--deflicker` are ignored.
 
 Audio is copied untouched when it is AAC, MP3 or ALAC. Anything else is re-encoded to AAC at 320 kbps.
 
